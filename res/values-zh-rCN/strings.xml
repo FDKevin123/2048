@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="high_score">最高分</string>
+    <string name="score">得分</string>
+    <string name="instructions">通过滑动移动滑块. 2 + 2 = 4. 目标 2048.</string>
+    <string name="you_win">你赢了</string>
+    <string name="game_over">游戏结束</string>
+
+</resources>

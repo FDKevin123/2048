@@ -65,6 +65,8 @@ public class MainView extends View {
     float gameOverTextSize;
 
     boolean refreshLastTime = true;
+    
+    String highScore, score, youWin, gameOver, instructions = "";
 
     static final int BASE_ANIMATION_TIME = 90000000;
     static int textPaddingSize = 0;
@@ -147,7 +149,7 @@ public class MainView extends View {
         backgroundRectangle.draw(canvas);
         paint.setTextSize(titleTextSize);
         paint.setColor(TEXT_BROWN);
-        canvas.drawText("HIGH SCORE", sXHighScore + textMiddleHighScore, titleStartYAll, paint);
+        canvas.drawText(highScore, sXHighScore + textMiddleHighScore, titleStartYAll, paint);
         paint.setTextSize(bodyTextSize);
         paint.setColor(TEXT_WHITE);
         canvas.drawText("" + game.highScore, sXHighScore + textMiddleHighScore, bodyStartYAll, paint);
@@ -158,7 +160,7 @@ public class MainView extends View {
         backgroundRectangle.draw(canvas);
         paint.setTextSize(titleTextSize);
         paint.setColor(TEXT_BROWN);
-        canvas.drawText("SCORE", sXScore + textMiddleScore, titleStartYAll, paint);
+        canvas.drawText(score, sXScore + textMiddleScore, titleStartYAll, paint);
         paint.setTextSize(bodyTextSize);
         paint.setColor(TEXT_WHITE);
         canvas.drawText("" + game.score, sXScore + textMiddleScore, bodyStartYAll, paint);
@@ -189,7 +191,7 @@ public class MainView extends View {
         paint.setTextSize(instructionsTextSize);
         paint.setTextAlign(Paint.Align.LEFT);
         int textShiftY = centerText() * 2;
-        canvas.drawText("Swipe to move. 2+2 = 4. Reach 2048.",
+        canvas.drawText(instructions,
                 startingX, endingY - textShiftY + textPaddingSize, paint);
     }
 
@@ -296,7 +298,7 @@ public class MainView extends View {
             paint.setAlpha((int) (255 * alphaChange));
             paint.setTextSize(gameOverTextSize);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("You Win!", boardMiddleX, boardMiddleY - centerText(), paint);
+            canvas.drawText(youWin, boardMiddleX, boardMiddleY - centerText(), paint);
             paint.setAlpha(255);
         } else if (game.lose) {
             fadeRectangle.setAlpha((int) (127 * alphaChange));
@@ -306,7 +308,7 @@ public class MainView extends View {
             paint.setAlpha((int) (255 * alphaChange));
             paint.setTextSize(gameOverTextSize);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("Game Over!", boardMiddleX, boardMiddleY - centerText(), paint);
+            canvas.drawText(gameOver, boardMiddleX, boardMiddleY - centerText(), paint);
             paint.setAlpha(255);
         }
     }
@@ -375,8 +377,8 @@ public class MainView extends View {
         titleStartYAll = (int) (sYAll + textPaddingSize + titleTextSize / 2 - textShiftYAll);
         bodyStartYAll = (int) (titleStartYAll + textPaddingSize + titleTextSize / 2 + bodyTextSize / 2);
 
-        titleWidthHighScore = (int) (paint.measureText("HIGH SCORE"));
-        titleWidthScore = (int) (paint.measureText("SCORE"));
+        titleWidthHighScore = (int) (paint.measureText(highScore));
+        titleWidthScore = (int) (paint.measureText(score));
         paint.setTextSize(bodyTextSize);
         textShiftYAll = centerText();
         eYAll = (int) (bodyStartYAll + textShiftYAll + bodyTextSize / 2 + textPaddingSize);
@@ -414,6 +416,11 @@ public class MainView extends View {
         //Loading resources
         game = new MainGame(context, this);
         try {
+            highScore = resources.getString(R.string.high_score);
+            score = resources.getString(R.string.score);
+            youWin = resources.getString(R.string.you_win);
+            gameOver = resources.getString(R.string.game_over);
+            instructions = resources.getString(R.string.instructions);
             backgroundRectangle =  resources.getDrawable(R.drawable.background_rectangle);
             cellRectangle[0] =  resources.getDrawable(R.drawable.cell_rectangle);
             cellRectangle[1] =  resources.getDrawable(R.drawable.cell_rectangle_2);
