@@ -7,6 +7,8 @@ All credit for game design goes to him.
 
 Logo redrawn by Margaret Lu.
 
-Original code: https://github.com/gabrielecirulli/2048
+Android Code original written by https://github.com/tpcstld/2048
+
+Web Original code: https://github.com/gabrielecirulli/2048
 
 Used under MIT License.
