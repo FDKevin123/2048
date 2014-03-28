@@ -68,12 +68,12 @@ public class MainView extends View {
     
     String highScore, score, youWin, gameOver, instructions = "";
 
-    static final int BASE_ANIMATION_TIME = 90000000;
+    static final int BASE_ANIMATION_TIME = 120000000;
     static int textPaddingSize = 0;
     static int iconPaddingSize = 0;
 
-    static final float MERGING_ACCELERATION = (float) -0.5;
-    static final float INITIAL_VELOCITY = (1 - MERGING_ACCELERATION) / 4;
+    static final float MERGING_ACCELERATION = (float) 0.6;
+    static final float MAX_VELOCITY = (float) (MERGING_ACCELERATION * 0.5); // v = at (t = 0.5)
 
     @Override
     public void onDraw(Canvas canvas) {
@@ -249,8 +249,17 @@ public class MainView extends View {
                             drawDrawable(canvas, cellRectangle[index], (int) (sX + cellScaleSize), (int) (sY + cellScaleSize), (int) (eX - cellScaleSize), (int) (eY - cellScaleSize));
                         } else if (aCell.getAnimationType() == MainGame.MERGE_ANIMATION) { // Merging Animation
                             double percentDone = aCell.getPercentageDone();
-                            float textScaleSize = (float) (1 + INITIAL_VELOCITY * percentDone
-                                    + MERGING_ACCELERATION * percentDone * percentDone / 2);
+                            
+                            float currentVelocity = (float) 0.0;
+                            
+                            // Accelerate and then moderate
+                            if (percentDone < 0.5) {
+                                currentVelocity = (float) (MERGING_ACCELERATION * percentDone); // v = at
+                            } else {
+                                currentVelocity = (float) (MAX_VELOCITY - MERGING_ACCELERATION * (percentDone - 0.5)); // v = v0 - at
+                            }
+                            
+                            float textScaleSize = (float) (1 + currentVelocity * percentDone); // s = vt
 
                             float cellScaleSize = cellSize / 2 * (1 - textScaleSize);
                             drawDrawable(canvas, cellRectangle[index], (int) (sX + cellScaleSize), (int) (sY + cellScaleSize), (int) (eX - cellScaleSize), (int) (eY - cellScaleSize));

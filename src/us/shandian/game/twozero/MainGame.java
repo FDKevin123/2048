@@ -32,7 +32,7 @@ public class MainGame {
     static final int FADE_GLOBAL_ANIMATION = 0;
 
     static final long MOVE_ANIMATION_TIME = MainView.BASE_ANIMATION_TIME;
-    static final long SPAWN_ANIMATION_TIME = MainView.BASE_ANIMATION_TIME;
+    static final long SPAWN_ANIMATION_TIME = (int) (MainView.BASE_ANIMATION_TIME * 1.5);
     static final long NOTIFICATION_ANIMATION_TIME = MainView.BASE_ANIMATION_TIME * 5;
     static final long NOTIFICATION_DELAY_TIME = MOVE_ANIMATION_TIME + SPAWN_ANIMATION_TIME;
     static final String HIGH_SCORE = "high score";
