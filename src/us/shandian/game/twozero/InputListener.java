@@ -115,7 +115,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                 y = event.getY();
                 previousDirection = 1;
                 veryLastDirection = 1;
-                if (pathMoved() <= MainView.iconSize
+                if (!moved && pathMoved() <= MainView.iconSize
                         && inRange(MainView.sXNewGame, x, MainView.sXNewGame + MainView.iconSize)
                         && inRange(MainView.sYIcons, y, MainView.sYIcons + MainView.iconSize)) {
                     mView.game.newGame();
