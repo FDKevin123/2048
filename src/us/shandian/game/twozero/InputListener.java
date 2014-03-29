@@ -1,9 +1,10 @@
 package us.shandian.game.twozero;
 
 import android.view.MotionEvent;
+import android.view.KeyEvent;
 import android.view.View;
 
-public class InputListener implements View.OnTouchListener {
+public class InputListener implements View.OnTouchListener, View.OnKeyListener {
 
     private static final int SWIPE_MIN_DISTANCE = 0;
     private static final int SWIPE_THRESHOLD_VELOCITY = 15;
@@ -111,6 +112,27 @@ public class InputListener implements View.OnTouchListener {
                 }
         }
         return true;
+    }
+
+    @Override
+    public boolean onKey(View view, int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    mView.game.move(2);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    mView.game.move(0);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    mView.game.move(3);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    mView.game.move(1);
+                    return true;
+            }
+        }
+        return false;
     }
 
     public float pathMoved() {

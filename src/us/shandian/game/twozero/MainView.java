@@ -16,6 +16,7 @@ public class MainView extends View {
 
     Paint paint = new Paint();
     public MainGame game;
+    InputListener listener;
 
     boolean getScreenSize = true;
     int cellSize = 0;
@@ -457,7 +458,9 @@ public class MainView extends View {
         } catch (Exception e) {
             System.out.println("Error getting assets?");
         }
-        setOnTouchListener(new InputListener(this));
+        listener = new InputListener(this);
+        setOnTouchListener(listener);
+        setOnKeyListener(listener);
         game.newGame();
     }
 
