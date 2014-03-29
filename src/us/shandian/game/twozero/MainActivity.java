@@ -1,22 +1,28 @@
 package us.shandian.game.twozero;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuInflater;
 import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
 
     MainView view;
+    
+    MenuItem menu_undo;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-        view = new MainView(getBaseContext());
+        
+        view = new MainView(getBaseContext(), this);
         if (savedInstanceState != null) {
             Tile[][] field = view.game.grid.field;
             int[][] saveState = new int[field.length][field[0].length];
@@ -42,11 +48,20 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        menu_undo = menu.findItem(R.id.menu_undo);
+        menu_undo.setEnabled(view.game.grid.canRevert);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_undo:
+                view.game.revertState();
+                return true;
+        }
         return true;
     }
 
@@ -70,5 +85,10 @@ public class MainActivity extends Activity {
         savedInstanceState.putLong("high score", view.game.highScore);
         savedInstanceState.putBoolean("won", view.game.won);
         savedInstanceState.putBoolean("lose", view.game.lose);
+    }
+    
+    public void updateUndoState() {
+        if (menu_undo == null) return;
+        menu_undo.setEnabled(view.game.grid.canRevert);
     }
 }

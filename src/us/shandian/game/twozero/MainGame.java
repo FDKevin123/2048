@@ -15,13 +15,16 @@ public class MainGame {
     final int numSquaresX = 4;
     final int numSquaresY = 4;
     final int startTiles = 2;
-
+    
     long score = 0;
+    long lastScore = 0;
     long highScore = 0;
     boolean won = false;
     boolean lose = false;
 
     Context mContext;
+    
+    MainActivity mActivity;
 
     MainView mView;
 
@@ -37,9 +40,10 @@ public class MainGame {
     static final long NOTIFICATION_DELAY_TIME = MOVE_ANIMATION_TIME + SPAWN_ANIMATION_TIME;
     static final String HIGH_SCORE = "high score";
 
-    public MainGame(Context context, MainView view) {
+    public MainGame(Context context, MainView view, MainActivity activity) {
         mContext = context;
         mView = view;
+        mActivity = activity;
     }
 
     public void newGame() {
@@ -57,6 +61,7 @@ public class MainGame {
         mView.refreshLastTime = true;
         mView.resyncTime();
         mView.postInvalidate();
+        mActivity.updateUndoState();
     }
 
     public void addStartTiles() {
@@ -103,8 +108,26 @@ public class MainGame {
         grid.field[cell.getX()][cell.getY()] = tile;
         tile.updatePosition(cell);
     }
+    
+    public void saveState() {
+        grid.saveTiles();
+        lastScore = score;
+        mActivity.updateUndoState();
+    }
+    
+    public void revertState() {
+        aGrid = new AnimationGrid(numSquaresX, numSquaresY);
+        grid.revertTiles();
+        score = lastScore;
+        mView.refreshLastTime = true;
+        mView.resyncTime();
+        mView.invalidate();
+        mActivity.updateUndoState();
+    }
 
     public void move (int direction) {
+        saveState();
+        
         aGrid = new AnimationGrid(numSquaresX, numSquaresY);
         // 0: up, 1: right, 2: down, 3: left
         if (lose || won) {
@@ -184,6 +207,9 @@ public class MainGame {
             highScore = score;
             recordHighScore();
         }
+        
+        grid.canRevert = false;
+        mActivity.updateUndoState();
     }
 
     public Cell getVector(int direction) {

@@ -6,4 +6,5 @@
     <string name="you_win">你赢了</string>
     <string name="game_over">游戏结束</string>
 
+    <string name="menu_undo">反悔</string>
 </resources>

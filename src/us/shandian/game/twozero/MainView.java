@@ -420,11 +420,11 @@ public class MainView extends View {
         return (int) ((paint.descent() + paint.ascent()) / 2);
     }
 
-    public MainView(Context context) {
+    public MainView(Context context, MainActivity activity) {
         super(context);
         Resources resources = context.getResources();
         //Loading resources
-        game = new MainGame(context, this);
+        game = new MainGame(context, this, activity);
         try {
             highScore = resources.getString(R.string.high_score);
             score = resources.getString(R.string.score);

@@ -11,5 +11,7 @@
     <string name="instructions">Swipe to move. 2 + 2 = 4. Reach 2048.</string>
     <string name="you_win">You Win</string>
     <string name="game_over">Game Over</string>
+    
+    <string name="menu_undo">Undo</string>
 
 </resources>

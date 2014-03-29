@@ -5,12 +5,20 @@ import java.util.ArrayList;
 public class Grid {
 
     public Tile[][] field;
+    public Tile[][] lastField;
+    public boolean canRevert = false;
+    
+    int sizeX, sizeY;
 
     public Grid(int sizeX, int sizeY) {
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
         field = new Tile[sizeX][sizeY];
+        lastField = new Tile[sizeX][sizeY];
         for (int xx = 0; xx < field.length; xx++) {
             for (int yy = 0; yy < field[0].length; yy++) {
                 field[xx][yy] = null;
+                lastField[xx][yy] = null;
             }
         }
     }
@@ -79,5 +87,33 @@ public class Grid {
 
     public void removeTile(Tile tile) {
         field[tile.getX()][tile.getY()] = null;
+    }
+    
+    public void saveTiles() {
+        canRevert = true;
+        
+        for (int xx = 0; xx < field.length; xx++) {
+            for (int yy = 0; yy < field.length; yy++) {
+                if (field[xx][yy] == null) {
+                    lastField[xx][yy] = null;
+                } else {
+                    lastField[xx][yy] = new Tile(xx, yy, field[xx][yy].getValue());
+                }
+            }
+        }
+    }
+    
+    public void revertTiles() {
+        canRevert = false;
+        
+        for (int xx = 0; xx < lastField.length; xx++) {
+            for (int yy = 0; yy < lastField.length; yy++) {
+                if (lastField[xx][yy] == null) {
+                    field[xx][yy] = null;
+                } else {
+                    field[xx][yy] = new Tile(xx, yy, lastField[xx][yy].getValue());
+                }
+            }
+        }
     }
 }
