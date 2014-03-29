@@ -21,6 +21,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
     private float startingY;
     private int previousDirection = 1;
     private int veryLastDirection = 1;
+    private boolean moved = false;
 
     MainView mView;
 
@@ -41,12 +42,15 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                 previousY = y;
                 lastdx = 0;
                 lastdy = 0;
+                moved = false;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 x = event.getX();
                 y = event.getY();
                 if (!mView.game.won && !mView.game.lose) {
                     float dx = x - previousX;
+                    
+                    // Horizonal
                     if (Math.abs(lastdx + dx) < Math.abs(lastdx) + Math.abs(dx) && Math.abs(dx) > RESET_STARTING
                             &&  Math.abs(x - startingX) > SWIPE_MIN_DISTANCE) {
                         startingX = x;
@@ -57,6 +61,22 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                     if (lastdx == 0) {
                         lastdx = dx;
                     }
+                    
+                    if (!moved && pathMoved() > SWIPE_MIN_DISTANCE * SWIPE_MIN_DISTANCE) {
+                        if (((dx >= SWIPE_THRESHOLD_VELOCITY  && previousDirection == 1) || x - startingX >= MOVE_THRESHOLD) && previousDirection % 5 != 0) {
+                            moved = true;
+                            previousDirection = previousDirection * 5;
+                            veryLastDirection = 5;
+                            mView.game.move(1);
+                        } else if (((dx <= -SWIPE_THRESHOLD_VELOCITY  && previousDirection == 1) || x - startingX <= -MOVE_THRESHOLD) && previousDirection % 7 != 0) {
+                            moved = true;
+                            previousDirection = previousDirection * 7;
+                            veryLastDirection = 7;
+                            mView.game.move(3);
+                        }
+                    }
+                    
+                    // Vertical
                     float dy = y - previousY;
                     if (Math.abs(lastdy + dy) < Math.abs(lastdy) + Math.abs(dy) && Math.abs(dy) > RESET_STARTING
                             && Math.abs(y - startingY) > SWIPE_MIN_DISTANCE) {
@@ -68,8 +88,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                     if (lastdy == 0) {
                         lastdy = dy;
                     }
-                    if (pathMoved() > SWIPE_MIN_DISTANCE * SWIPE_MIN_DISTANCE) {
-                        boolean moved = false;
+                    if (!moved && pathMoved() > SWIPE_MIN_DISTANCE * SWIPE_MIN_DISTANCE) {
                         if (((dy >= SWIPE_THRESHOLD_VELOCITY && previousDirection == 1) || y - startingY >= MOVE_THRESHOLD) && previousDirection % 2 != 0) {
                             moved = true;
                             previousDirection = previousDirection * 2;
@@ -80,21 +99,12 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                             previousDirection = previousDirection * 3;
                             veryLastDirection = 3;
                             mView.game.move(0);
-                        } else if (((dx >= SWIPE_THRESHOLD_VELOCITY  && previousDirection == 1) || x - startingX >= MOVE_THRESHOLD) && previousDirection % 5 != 0) {
-                            moved = true;
-                            previousDirection = previousDirection * 5;
-                            veryLastDirection = 5;
-                            mView.game.move(1);
-                        } else if (((dx <= -SWIPE_THRESHOLD_VELOCITY  && previousDirection == 1) || x - startingX <= -MOVE_THRESHOLD) && previousDirection % 7 != 0) {
-                            moved = true;
-                            previousDirection = previousDirection * 7;
-                            veryLastDirection = 7;
-                            mView.game.move(3);
                         }
-                        if (moved) {
-                            startingX = x;
-                            startingY = y;
-                        }
+                    }
+                    
+                    if (moved) {
+                        startingX = x;
+                        startingY = y;
                     }
                 }
                 previousX = x;
