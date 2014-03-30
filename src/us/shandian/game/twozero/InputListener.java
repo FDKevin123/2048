@@ -7,7 +7,7 @@ import android.view.View;
 public class InputListener implements View.OnTouchListener, View.OnKeyListener {
 
     private static final int SWIPE_MIN_DISTANCE = 0;
-    private static final int SWIPE_THRESHOLD_VELOCITY = 15;
+    private static final int SWIPE_THRESHOLD_VELOCITY = 40;
     private static final int MOVE_THRESHOLD = 250;
     private static final int RESET_STARTING = 10;
 
