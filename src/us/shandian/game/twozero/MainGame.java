@@ -23,8 +23,6 @@ public class MainGame {
     boolean lose = false;
 
     Context mContext;
-    
-    MainActivity mActivity;
 
     MainView mView;
 
@@ -40,10 +38,9 @@ public class MainGame {
     static final long NOTIFICATION_DELAY_TIME = MOVE_ANIMATION_TIME + SPAWN_ANIMATION_TIME;
     static final String HIGH_SCORE = "high score";
 
-    public MainGame(Context context, MainView view, MainActivity activity) {
+    public MainGame(Context context, MainView view) {
         mContext = context;
         mView = view;
-        mActivity = activity;
     }
 
     public void newGame() {
@@ -61,7 +58,6 @@ public class MainGame {
         mView.refreshLastTime = true;
         mView.resyncTime();
         mView.postInvalidate();
-        mActivity.updateUndoState();
     }
 
     public void addStartTiles() {
@@ -112,7 +108,6 @@ public class MainGame {
     public void saveState() {
         grid.saveTiles();
         lastScore = score;
-        mActivity.updateUndoState();
     }
     
     public void revertState() {
@@ -122,7 +117,6 @@ public class MainGame {
         mView.refreshLastTime = true;
         mView.resyncTime();
         mView.invalidate();
-        mActivity.updateUndoState();
     }
 
     public void move (int direction) {
@@ -209,7 +203,6 @@ public class MainGame {
         }
         
         grid.canRevert = false;
-        mActivity.updateUndoState();
     }
 
     public Cell getVector(int direction) {

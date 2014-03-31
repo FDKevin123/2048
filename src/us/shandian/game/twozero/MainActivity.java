@@ -13,16 +13,13 @@ public class MainActivity extends Activity {
 
     MainView view;
     
-    MenuItem menu_undo;
-    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         
-        view = new MainView(getBaseContext(), this);
+        view = new MainView(getBaseContext());
         if (savedInstanceState != null) {
             Tile[][] field = view.game.grid.field;
             int[][] saveState = new int[field.length][field[0].length];
@@ -50,8 +47,12 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
-        menu_undo = menu.findItem(R.id.menu_undo);
-        menu_undo.setEnabled(view.game.grid.canRevert);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.menu_undo).setEnabled(view.game.grid.canRevert);
         return true;
     }
 
@@ -85,10 +86,5 @@ public class MainActivity extends Activity {
         savedInstanceState.putLong("high score", view.game.highScore);
         savedInstanceState.putBoolean("won", view.game.won);
         savedInstanceState.putBoolean("lose", view.game.lose);
-    }
-    
-    public void updateUndoState() {
-        if (menu_undo == null) return;
-        menu_undo.setEnabled(view.game.grid.canRevert);
     }
 }
