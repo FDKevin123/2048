@@ -7,4 +7,11 @@
     <string name="game_over">游戏结束</string>
 
     <string name="menu_undo">反悔</string>
+    <string name="menu_settings">设置</string>
+
+    <!-- Settings -->
+    <string name="settings_sensitivity">灵敏度</string>
+    <string name="settings_sensitivity_high">高</string>
+    <string name="settings_sensitivity_midium">中</string>
+    <string name="settings_sensitivity_low">低</string>
 </resources>

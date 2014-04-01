@@ -2,12 +2,16 @@ package us.shandian.game.twozero;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.Window;
 import android.view.WindowManager;
+
+import us.shandian.game.twozero.settings.SettingsProvider;
+import us.shandian.game.twozero.settings.SettingsActivity;
 
 public class MainActivity extends Activity {
 
@@ -16,6 +20,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SettingsProvider.initPreferences(this);
+        InputListener.loadSensitivity();
+        
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         
@@ -61,6 +68,12 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.menu_undo:
                 view.game.revertState();
+                return true;
+            case R.id.menu_settings:
+                Intent i = new Intent();
+                i.setAction(Intent.ACTION_MAIN);
+                i.setClass(this, SettingsActivity.class);
+                startActivity(i);
                 return true;
         }
         return true;

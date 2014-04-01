@@ -4,11 +4,13 @@ import android.view.MotionEvent;
 import android.view.KeyEvent;
 import android.view.View;
 
+import us.shandian.game.twozero.settings.SettingsProvider;
+
 public class InputListener implements View.OnTouchListener, View.OnKeyListener {
 
     private static final int SWIPE_MIN_DISTANCE = 0;
-    private static final int SWIPE_THRESHOLD_VELOCITY = 40;
-    private static final int MOVE_THRESHOLD = 250;
+    private static int SWIPE_THRESHOLD_VELOCITY = 40;
+    private static int MOVE_THRESHOLD = 250;
     private static final int RESET_STARTING = 10;
 
     private float x;
@@ -28,6 +30,24 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
     public InputListener(MainView view) {
         super();
         this.mView = view;
+    }
+    
+    public static void loadSensitivity() {
+        int sensitivity = SettingsProvider.getInt(SettingsProvider.KEY_SENSITIVITY, 1);
+        switch (sensitivity) {
+            case 0:
+                SWIPE_THRESHOLD_VELOCITY = 20;
+                MOVE_THRESHOLD = 200;
+                break;
+            case 1:
+                SWIPE_THRESHOLD_VELOCITY = 30;
+                MOVE_THRESHOLD = 250;
+                break;
+            case 2:
+                SWIPE_THRESHOLD_VELOCITY = 40;
+                MOVE_THRESHOLD = 300;
+                break;
+        }
     }
 
     public boolean onTouch(View view, MotionEvent event) {
