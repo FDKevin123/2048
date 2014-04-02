@@ -12,6 +12,8 @@ import android.view.View;
 
 import java.util.ArrayList;
 
+import us.shandian.game.twozero.settings.SettingsProvider;
+
 public class MainView extends View {
 
     Paint paint = new Paint();
@@ -37,8 +39,8 @@ public class MainView extends View {
     int TEXT_BROWN;
 
 
-    int halfNumSquaresX;
-    int halfNumSquaresY;
+    double halfNumSquaresX;
+    double halfNumSquaresY;
 
     int startingX;
     int startingY;
@@ -69,6 +71,9 @@ public class MainView extends View {
     
     String highScore, score, youWin, gameOver, instructions = "";
 
+    String[] tileTexts;
+    int maxValue;
+    
     static final int BASE_ANIMATION_TIME = 120000000;
     static int textPaddingSize = 0;
     static int iconPaddingSize = 0;
@@ -117,12 +122,12 @@ public class MainView extends View {
 
     public void drawCellText(Canvas canvas, int value, int sX, int sY) {
         int textShiftY = centerText();
-        if (value >= 8) {
+        if (value >= 3) {
             paint.setColor(TEXT_WHITE);
         } else {
             paint.setColor(TEXT_BLACK);
         }
-        canvas.drawText("" + value, sX + cellSize / 2, sY + cellSize / 2 - textShiftY, paint);
+        canvas.drawText(tileTexts[value - 1], sX + cellSize / 2, sY + cellSize / 2 - textShiftY, paint);
     }
 
     public void drawScoreText(Canvas canvas) {
@@ -184,7 +189,7 @@ public class MainView extends View {
         paint.setTextAlign(Paint.Align.LEFT);
         int textShiftY = centerText() * 2;
         int headerStartY = sYAll - textShiftY;
-        canvas.drawText("2048", startingX, headerStartY, paint);
+        canvas.drawText(tileTexts[tileTexts.length - 1], startingX, headerStartY, paint);
     }
 
     public void drawInstructions(Canvas canvas) {
@@ -371,13 +376,13 @@ public class MainView extends View {
         iconPaddingSize = (int) (textSize / 5);
 
         //Grid Dimensions
-        halfNumSquaresX = game.numSquaresX / 2;
-        halfNumSquaresY = game.numSquaresY / 2;
+        halfNumSquaresX = game.numSquaresX / 2d;
+        halfNumSquaresY = game.numSquaresY / 2d;
 
-        startingX = boardMiddleX - (cellSize + gridWidth) * halfNumSquaresX - gridWidth / 2;
-        endingX = boardMiddleX + (cellSize + gridWidth) * halfNumSquaresX + gridWidth / 2;
-        startingY = boardMiddleY - (cellSize + gridWidth) * halfNumSquaresY - gridWidth / 2;
-        endingY = boardMiddleY + (cellSize + gridWidth) * halfNumSquaresY + gridWidth / 2;
+        startingX = (int) (boardMiddleX - (cellSize + gridWidth) * halfNumSquaresX - gridWidth / 2);
+        endingX = (int) (boardMiddleX + (cellSize + gridWidth) * halfNumSquaresX + gridWidth / 2);
+        startingY = (int) (boardMiddleY - (cellSize + gridWidth) * halfNumSquaresY - gridWidth / 2);
+        endingY = (int) (boardMiddleY + (cellSize + gridWidth) * halfNumSquaresY + gridWidth / 2);
 
         paint.setTextSize(titleTextSize);
 
@@ -404,16 +409,30 @@ public class MainView extends View {
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         
+        // The last drawable
+        Drawable lastDrawable = cellRectangle[11];
+        
+        // Array
+        Drawable[] newArray = new Drawable[tileTexts.length + 1];
+        newArray[0] = cellRectangle[0];
+        
         // Draw the rects into cache
-        for (int i = 1; i < cellRectangle.length; i++) {
-            Drawable rect = cellRectangle[i];
+        for (int i = 1; i < tileTexts.length + 1; i++) {
+            Drawable rect;
+            if (i <= 11) {
+                rect = cellRectangle[i];
+            } else {
+                rect = lastDrawable;
+            }
             Bitmap bitmap = Bitmap.createBitmap(cellSize, cellSize, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             drawDrawable(canvas, rect, 0, 0, cellSize, cellSize);
-            drawCellText(canvas, ((Double) Math.pow(2, i)).intValue(), 0, 0);
+            drawCellText(canvas, i, 0, 0);
             rect = new BitmapDrawable(bitmap);
-            cellRectangle[i] = rect;
+            newArray[i] = rect;
         }
+        
+        cellRectangle = newArray;
     }
 
     public int centerText() {
@@ -423,14 +442,26 @@ public class MainView extends View {
     public MainView(Context context) {
         super(context);
         Resources resources = context.getResources();
+        // Tile texts
+        int variety = SettingsProvider.getInt(SettingsProvider.KEY_VARIETY, 0);
+        String[] varietyEntries = resources.getStringArray(R.array.variety_entries);
+        tileTexts = varietyEntries[variety].split("\\|");
+        maxValue = (int) Math.pow(2, tileTexts.length);
+        
         //Loading resources
         game = new MainGame(context, this);
+        
+        if (tileTexts.length > 12) {
+            game.numSquaresX = 5;
+            game.numSquaresY = 5;
+        }
+        
         try {
             highScore = resources.getString(R.string.high_score);
             score = resources.getString(R.string.score);
             youWin = resources.getString(R.string.you_win);
             gameOver = resources.getString(R.string.game_over);
-            instructions = resources.getString(R.string.instructions);
+            instructions = resources.getString(R.string.instructions) + " " + tileTexts[0] + " + " + tileTexts[0] + " = " + tileTexts[1];
             backgroundRectangle =  resources.getDrawable(R.drawable.background_rectangle);
             cellRectangle[0] =  resources.getDrawable(R.drawable.cell_rectangle);
             cellRectangle[1] =  resources.getDrawable(R.drawable.cell_rectangle_2);

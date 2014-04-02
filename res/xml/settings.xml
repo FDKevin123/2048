@@ -8,4 +8,10 @@
         android:entries="@array/settings_sensitivity_entries"
         android:entryValues="@array/settings_sensitivity_values" />
     
+    <ListPreference
+        android:key="settings_variety"
+        android:title="@string/settings_variety"
+        android:entries="@array/settings_variety_entries"
+        android:entryValues="@array/settings_variety_values" />
+    
 </PreferenceScreen>

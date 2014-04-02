@@ -2,7 +2,7 @@
 <resources>
     <string name="high_score">最高分</string>
     <string name="score">得分</string>
-    <string name="instructions">通过滑动移动滑块. 2 + 2 = 4. 目标 2048.</string>
+    <string name="instructions">通过滑动移动滑块.</string>
     <string name="you_win">你赢了</string>
     <string name="game_over">游戏结束</string>
 
@@ -14,4 +14,9 @@
     <string name="settings_sensitivity_high">高</string>
     <string name="settings_sensitivity_midium">中</string>
     <string name="settings_sensitivity_low">低</string>
+    <string name="settings_variety">变种玩法</string>
+    <string name="settings_variety_chinese_dynasties">中国朝代</string>
+    
+    <!-- Messages -->
+    <string name="msg_restart">你需要重启 2048 使设置生效</string>
 </resources>

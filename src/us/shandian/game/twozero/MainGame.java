@@ -12,8 +12,8 @@ public class MainGame {
 
     public Grid grid;
     public AnimationGrid aGrid;
-    final int numSquaresX = 4;
-    final int numSquaresY = 4;
+    static  int numSquaresX = 4;
+    static int numSquaresY = 4;
     final int startTiles = 2;
     
     long score = 0;
@@ -164,8 +164,8 @@ public class MainGame {
                         score = score + merged.getValue();
                         highScore = Math.max(score, highScore);
 
-                        // The mighty 2048 tile
-                        if (merged.getValue() == 2048) {
+                        // The mighty max tile
+                        if (merged.getValue() == mView.maxValue) {
                             won = true;
                             endGame();
                         }

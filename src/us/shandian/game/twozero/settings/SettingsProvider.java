@@ -8,6 +8,7 @@ public class SettingsProvider
     public static String KEY_PREFERENCES = "preferences";
     
     public static String KEY_SENSITIVITY = "settings_sensitivity";
+    public static String KEY_VARIETY = "settings_variety";
 
     public static SharedPreferences prefs;
     
