@@ -16,6 +16,7 @@
     <string name="settings_sensitivity_low">低</string>
     <string name="settings_variety">变种玩法</string>
     <string name="settings_variety_chinese_dynasties">中国朝代</string>
+    <string name="settings_variety_periodic_table_of_elements_first_twenty">元素周期表 (前20号元素)</string>
     
     <!-- Messages -->
     <string name="msg_restart">你需要重启 2048 使设置生效</string>

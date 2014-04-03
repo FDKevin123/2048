@@ -21,6 +21,7 @@
     <string name="settings_sensitivity_low">Low</string>
     <string name="settings_variety">Variety</string>
     <string name="settings_variety_chinese_dynasties">Chinese Dynasties</string>
+    <string name="settings_variety_periodic_table_of_elements_first_twenty">Periodic Table Of Elements (First 20 elements)</string>
     
     <!-- Messages -->
     <string name="msg_restart">You need to restart 2048 to make changes take effect</string>

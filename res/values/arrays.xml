@@ -22,17 +22,22 @@
         
         <!-- Chinese Dynasties -->
         <item>夏|商|周|秦|汉|三国|晋|南朝|北朝|隋|唐|五代|十国|宋|元|明|清|民国|PRC</item>
+        
+        <!-- Periodic Table Of Elements (First 20 elements) -->
+        <item>H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca</item>
     </string-array>
     
     <string-array name="settings_variety_entries" translatable="false">
         <item>2048</item>
         <item>4096</item>
         <item>@string/settings_variety_chinese_dynasties</item>
+        <item>@string/settings_variety_periodic_table_of_elements_first_twenty</item>
     </string-array>
     
     <string-array name="settings_variety_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </string-array>
 </resources>
