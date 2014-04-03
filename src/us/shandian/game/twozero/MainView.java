@@ -479,7 +479,7 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
         super(context);
         // Initialize surface
         getHolder().addCallback(this);
-        setLayerType(View.LAYER_TYPE_HARDWARE, paint);
+        getHolder().setType(SurfaceHolder.SURFACE_TYPE_GPU);
         
         Resources resources = context.getResources();
         // Tile texts
