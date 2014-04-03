@@ -9,13 +9,15 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
 
 import java.util.ArrayList;
 
 import us.shandian.game.twozero.settings.SettingsProvider;
 
-public class MainView extends View {
-
+public class MainView extends SurfaceView implements SurfaceHolder.Callback
+{
     Paint paint = new Paint();
     public MainGame game;
     InputListener listener;
@@ -34,6 +36,7 @@ public class MainView extends View {
     Drawable lightUpRectangle;
     Drawable fadeRectangle;
     Bitmap background = null;
+    int backgroundColor;
     int TEXT_BLACK;
     int TEXT_WHITE;
     int TEXT_BROWN;
@@ -69,6 +72,8 @@ public class MainView extends View {
 
     boolean refreshLastTime = true;
     
+    boolean drawing = true;
+    
     String highScore, score, youWin, gameOver, instructions = "";
 
     String[] tileTexts;
@@ -80,9 +85,55 @@ public class MainView extends View {
 
     static final float MERGING_ACCELERATION = (float) 0.6;
     static final float MAX_VELOCITY = (float) (MERGING_ACCELERATION * 0.5); // v = at (t = 0.5)
+    
+    Thread drawer;
 
     @Override
-    public void onDraw(Canvas canvas) {
+    public void surfaceCreated(SurfaceHolder holder) {
+        // TODO: Implement this method
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // Start drawer thread
+        drawing = true;
+        drawer = new Thread(new Runnable() {
+            SurfaceHolder holder;
+            Canvas canvas;
+
+            @Override
+            public void run() {
+                holder = getHolder();
+                while (drawing) {
+                    try {
+                        // Lock & draw
+                        canvas = holder.lockCanvas();
+                        doDraw(canvas);
+                        holder.unlockCanvasAndPost(canvas);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        drawer.start();
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder p1) {
+        // Stop drawer thread
+        drawing = false;
+    }
+
+    @Override
+    protected void onSizeChanged(int width, int height, int oldw, int oldh)
+    {
+        super.onSizeChanged(width, height, oldw, oldh);
+        getLayout(width, height);
+        createBackgroundBitmap(width, height);
+    }
+    
+    public void doDraw(Canvas canvas) {
         //Reset the transparency of the screen
 
         canvas.drawBitmap(background, 0, 0, paint);
@@ -96,23 +147,8 @@ public class MainView extends View {
         drawCells(canvas);
 
         drawEndGameState(canvas);
-
-        //Refresh the screen if there is still an animation running
-        if (game.aGrid.isAnimationActive()) {
-            invalidate(startingX, startingY, endingX, endingY);
-            tick();
-        //Refresh one last time on game end.
-        } else if ((game.won || game.lose) && refreshLastTime) {
-            invalidate();
-            refreshLastTime = false;
-        }
-    }
-
-    @Override
-    protected void onSizeChanged(int width, int height, int oldw, int oldh) {
-        super.onSizeChanged(width, height, oldw, oldh);
-        getLayout(width, height);
-        createBackgroundBitmap(width, height);
+        
+        tick();
     }
 
     public void drawDrawable(Canvas canvas, Drawable draw, int startingX, int startingY, int endingX, int endingY) {
@@ -331,12 +367,12 @@ public class MainView extends View {
     public void createBackgroundBitmap(int width, int height) {
         background = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(background);
+        canvas.drawColor(backgroundColor);
         drawHeader(canvas);
         drawNewGameButton(canvas);
         drawBackground(canvas);
         drawBackgroundGrid(canvas);
         drawInstructions(canvas);
-
     }
 
 
@@ -441,6 +477,10 @@ public class MainView extends View {
 
     public MainView(Context context) {
         super(context);
+        // Initialize surface
+        getHolder().addCallback(this);
+        setLayerType(View.LAYER_TYPE_HARDWARE, paint);
+        
         Resources resources = context.getResources();
         // Tile texts
         int variety = SettingsProvider.getInt(SettingsProvider.KEY_VARIETY, 0);
@@ -481,8 +521,7 @@ public class MainView extends View {
             TEXT_WHITE = resources.getColor(R.color.text_white);
             TEXT_BLACK = resources.getColor(R.color.text_black);
             TEXT_BROWN = resources.getColor(R.color.text_brown);
-            this.setBackgroundColor(resources.getColor(R.color.background));
-            this.setDrawingCacheEnabled(true);
+            backgroundColor = resources.getColor(R.color.background);
             Typeface font = Typeface.createFromAsset(resources.getAssets(), "ClearSans-Bold.ttf");
             paint.setTypeface(font);
             paint.setAntiAlias(true);

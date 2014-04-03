@@ -57,7 +57,7 @@ public class MainGame {
         addStartTiles();
         mView.refreshLastTime = true;
         mView.resyncTime();
-        mView.postInvalidate();
+        //mView.postInvalidate();
     }
 
     public void addStartTiles() {
@@ -116,7 +116,7 @@ public class MainGame {
         score = lastScore;
         mView.refreshLastTime = true;
         mView.resyncTime();
-        mView.invalidate();
+        //mView.invalidate();
     }
 
     public void move (int direction) {
@@ -192,7 +192,7 @@ public class MainGame {
 
         }
         mView.resyncTime();
-        mView.postInvalidate();
+        //mView.postInvalidate();
     }
 
     public void endGame() {
