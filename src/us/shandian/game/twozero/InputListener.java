@@ -36,7 +36,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
         int sensitivity = SettingsProvider.getInt(SettingsProvider.KEY_SENSITIVITY, 1);
         switch (sensitivity) {
             case 0:
-                SWIPE_THRESHOLD_VELOCITY = 30;
+                SWIPE_THRESHOLD_VELOCITY = 20;
                 MOVE_THRESHOLD = 200;
                 break;
             case 1:
@@ -44,7 +44,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                 MOVE_THRESHOLD = 250;
                 break;
             case 2:
-                SWIPE_THRESHOLD_VELOCITY = 90;
+                SWIPE_THRESHOLD_VELOCITY = 100;
                 MOVE_THRESHOLD = 300;
                 break;
         }
