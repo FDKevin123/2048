@@ -9,14 +9,12 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
-import android.view.SurfaceView;
-import android.view.SurfaceHolder;
 
 import java.util.ArrayList;
 
 import us.shandian.game.twozero.settings.SettingsProvider;
 
-public class MainView extends SurfaceView implements SurfaceHolder.Callback
+public class MainView extends View
 {
     Paint paint = new Paint();
     public MainGame game;
@@ -72,8 +70,6 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
 
     boolean refreshLastTime = true;
     
-    boolean drawing = true;
-    
     String highScore, score, youWin, gameOver, instructions = "";
 
     String[] tileTexts;
@@ -86,45 +82,6 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
     static final float MERGING_ACCELERATION = (float) 0.6;
     static final float MAX_VELOCITY = (float) (MERGING_ACCELERATION * 0.5); // v = at (t = 0.5)
     
-    Thread drawer;
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        // TODO: Implement this method
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // Start drawer thread
-        drawing = true;
-        drawer = new Thread(new Runnable() {
-            SurfaceHolder holder;
-            Canvas canvas;
-
-            @Override
-            public void run() {
-                holder = getHolder();
-                while (drawing) {
-                    try {
-                        // Lock & draw
-                        canvas = holder.lockCanvas();
-                        doDraw(canvas);
-                        holder.unlockCanvasAndPost(canvas);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        drawer.start();
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder p1) {
-        // Stop drawer thread
-        drawing = false;
-    }
-
     @Override
     protected void onSizeChanged(int width, int height, int oldw, int oldh)
     {
@@ -133,7 +90,8 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
         createBackgroundBitmap(width, height);
     }
     
-    public void doDraw(Canvas canvas) {
+    @Override
+    public void onDraw(Canvas canvas) {
         //Reset the transparency of the screen
 
         canvas.drawBitmap(background, 0, 0, paint);
@@ -148,7 +106,15 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
 
         drawEndGameState(canvas);
         
-        tick();
+        if (game.aGrid.isAnimationActive()) {
+            // Refresh when animation running
+            invalidate(startingX, startingY, endingX, endingY);
+            tick();
+        } else if ((game.won || game.lose) && refreshLastTime) {
+            // Refresh last time when game end
+            invalidate();
+            refreshLastTime = false;
+        }
     }
 
     public void drawDrawable(Canvas canvas, Drawable draw, int startingX, int startingY, int endingX, int endingY) {
@@ -477,10 +443,6 @@ public class MainView extends SurfaceView implements SurfaceHolder.Callback
 
     public MainView(Context context) {
         super(context);
-        // Initialize surface
-        getHolder().addCallback(this);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_GPU);
-        
         Resources resources = context.getResources();
         // Tile texts
         int variety = SettingsProvider.getInt(SettingsProvider.KEY_VARIETY, 0);
