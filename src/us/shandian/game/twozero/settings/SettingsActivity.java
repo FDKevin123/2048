@@ -4,12 +4,14 @@ import android.preference.PreferenceActivity;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.content.Context;
 import android.view.MenuItem;
 import android.widget.Toast;
 import android.os.Bundle;
 
 import us.shandian.game.twozero.R;
 import us.shandian.game.twozero.InputListener;
+import us.shandian.game.twozero.MainActivity;
 
 public class SettingsActivity extends PreferenceActivity implements OnPreferenceChangeListener
 {
@@ -55,6 +57,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             String[] varietySummaries = getResources().getStringArray(R.array.settings_variety_entries);
             mVariety.setSummary(varietySummaries[variety]);
             SettingsProvider.putInt(SettingsProvider.KEY_VARIETY, variety);
+            
+            // Variety switch, must clear saved state and call MainActivity not to save
+            clearState();
+            
             Toast.makeText(this, R.string.msg_restart, 1000).show();
             return true;
         } else {
@@ -70,5 +76,13 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+    
+    private void clearState() {
+        getSharedPreferences("state", Context.MODE_WORLD_READABLE)
+                 .edit()
+                 .remove("size")
+                 .commit();
+        MainActivity.save = false;
     }
 }

@@ -3,6 +3,7 @@ package us.shandian.game.twozero;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +16,8 @@ import us.shandian.game.twozero.settings.SettingsActivity;
 
 public class MainActivity extends Activity {
 
+    public static boolean save = true;
+    
     MainView view;
     
     @Override
@@ -27,25 +30,30 @@ public class MainActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         
         view = new MainView(getBaseContext());
-        if (savedInstanceState != null) {
+        
+        // Restore state
+        SharedPreferences prefs = getSharedPreferences("state", Context.MODE_WORLD_READABLE);
+        int size = prefs.getInt("size", 0);
+        if (size == view.game.numSquaresX) {
             Tile[][] field = view.game.grid.field;
-            int[][] saveState = new int[field.length][field[0].length];
+            String[] saveState = new String[field[0].length];
             for (int xx = 0; xx < saveState.length; xx++) {
-                saveState[xx] = savedInstanceState.getIntArray("" + xx);
+                saveState[xx] = prefs.getString("" + xx, "");
             }
             for (int xx = 0; xx < saveState.length; xx++) {
-                for (int yy = 0; yy < saveState[0].length; yy++) {
-                    if (saveState[xx][yy] != 0) {
-                        view.game.grid.field[xx][yy] = new Tile(xx, yy, saveState[xx][yy]);
+                String[] array = saveState[xx].split("\\|");
+                for (int yy = 0; yy < array.length; yy++) {
+                    if (!array[yy].startsWith("0")) {
+                        view.game.grid.field[xx][yy] = new Tile(xx, yy, Integer.valueOf(array[yy]));
                     } else {
                         view.game.grid.field[xx][yy] = null;
                     }
                 }
             }
-            view.game.score = savedInstanceState.getLong("score");
-            view.game.highScore = savedInstanceState.getLong("high score");
-            view.game.won = savedInstanceState.getBoolean("won");
-            view.game.lose = savedInstanceState.getBoolean("lose");
+            view.game.score = prefs.getLong("score", 0);
+            view.game.highScore = prefs.getLong("high score", 0);
+            view.game.won = prefs.getBoolean("won", false);
+            view.game.lose = prefs.getBoolean("lose", false);
         }
         setContentView(view);
     }
@@ -80,24 +88,37 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onPause() {
+        super.onPause();
+        
+        // If variety switched, do not save
+        if (!save) return;
+        
+        SharedPreferences prefs = getSharedPreferences("state", Context.MODE_WORLD_READABLE);
+        SharedPreferences.Editor edit = prefs.edit();
         Tile[][] field = view.game.grid.field;
-        int[][] saveState = new int[field.length][field[0].length];
+        String[] saveState = new String[field[0].length];
         for (int xx = 0; xx < field.length; xx++) {
+            saveState[xx] = new String();
             for (int yy = 0; yy < field[0].length; yy++) {
                 if (field[xx][yy] != null) {
-                    saveState[xx][yy] = field[xx][yy].getValue();
+                    saveState[xx] += String.valueOf(field[xx][yy].getValue());
                 } else {
-                    saveState[xx][yy] = 0;
+                    saveState[xx] += "0";
+                }
+                if (yy < field[0].length - 1) {
+                    saveState[xx] += "|";
                 }
             }
         }
         for (int xx = 0; xx < saveState.length; xx++) {
-            savedInstanceState.putIntArray("" + xx, saveState[xx]);
+            edit.putString("" + xx, saveState[xx]);
         }
-        savedInstanceState.putLong("score", view.game.score);
-        savedInstanceState.putLong("high score", view.game.highScore);
-        savedInstanceState.putBoolean("won", view.game.won);
-        savedInstanceState.putBoolean("lose", view.game.lose);
+        edit.putLong("score", view.game.score);
+        edit.putLong("high score", view.game.highScore);
+        edit.putBoolean("won", view.game.won);
+        edit.putBoolean("lose", view.game.lose);
+        edit.putInt("size", view.game.numSquaresX);
+        edit.commit();
     }
 }
