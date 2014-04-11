@@ -8,5 +8,10 @@
         android:title="@string/menu_settings"
         android:enabled="true"
         android:showAsAction="never"/>
+    
+    <item android:id="@+id/menu_autorun"
+        android:title="@string/menu_autorun"
+        android:enabled="true"
+        android:showAsAction="never"/>
 
 </menu>

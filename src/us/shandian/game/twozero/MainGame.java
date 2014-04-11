@@ -12,6 +12,7 @@ public class MainGame {
 
     public Grid grid;
     public AnimationGrid aGrid;
+    public boolean emulating = false;
     static  int numSquaresX = 4;
     static int numSquaresY = 4;
     final int startTiles = 2;
@@ -21,6 +22,8 @@ public class MainGame {
     long highScore = 0;
     boolean won = false;
     boolean lose = false;
+    
+    Tile[][] savedTiles;
 
     Context mContext;
 
@@ -114,9 +117,12 @@ public class MainGame {
         aGrid = new AnimationGrid(numSquaresX, numSquaresY);
         grid.revertTiles();
         score = lastScore;
-        mView.refreshLastTime = true;
-        mView.resyncTime();
-        mView.invalidate();
+        
+        if (!emulating) {
+            mView.refreshLastTime = true;
+            mView.resyncTime();
+            mView.invalidate();
+        }
     }
 
     public void move (int direction) {
@@ -165,7 +171,7 @@ public class MainGame {
                         highScore = Math.max(score, highScore);
 
                         // The mighty max tile
-                        if (merged.getValue() == mView.maxValue) {
+                        if (!emulating && merged.getValue() == mView.maxValue) {
                             won = true;
                             endGame();
                         }
@@ -185,14 +191,17 @@ public class MainGame {
         if (moved) {
             addRandomTile();
 
-            if (!movesAvailable()) {
+            if (!emulating && !movesAvailable()) {
                 lose = true;
                 endGame();
             }
 
         }
-        mView.resyncTime();
-        mView.postInvalidate();
+        
+        if (!emulating) {
+            mView.resyncTime();
+            mView.postInvalidate();
+        }
     }
 
     public void endGame() {
@@ -283,5 +292,11 @@ public class MainGame {
 
     public boolean positionsEqual(Cell first, Cell second) {
         return first.getX() == second.getX() && first.getY() == second.getY();
+    }
+    
+    public void startEmulation() {
+        emulating = true;
+        grid.saveTiles();
+        savedTiles = grid.lastField;
     }
 }

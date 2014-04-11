@@ -9,8 +9,11 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
+import android.os.Handler;
+import android.os.Message;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 import us.shandian.game.twozero.settings.SettingsProvider;
 
@@ -18,6 +21,7 @@ public class MainView extends View
 {
     Paint paint = new Paint();
     public MainGame game;
+    AI ai;
     InputListener listener;
 
     boolean getScreenSize = true;
@@ -81,6 +85,37 @@ public class MainView extends View
 
     static final float MERGING_ACCELERATION = (float) 0.6;
     static final float MAX_VELOCITY = (float) (MERGING_ACCELERATION * 0.5); // v = at (t = 0.5)
+    
+    Handler aiHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            game.move((int) msg.obj);
+            invalidate();
+        }
+    };
+    
+    Thread aiThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                if (game.won || game.lose) {
+                    runAi = false;
+                }
+                if (!runAi) continue;
+                int bestMove = ai.getBestMove(1);
+                aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
+                
+                try {
+                    Thread.sleep(200);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+    
+    boolean runAi = false;
     
     @Override
     protected void onSizeChanged(int width, int height, int oldw, int oldh)
@@ -222,6 +257,16 @@ public class MainView extends View
     }
 
     public void drawCells(Canvas canvas) {
+        Tile[][] tiles;
+        AnimationGrid aGrid;
+        if (game.emulating) {
+            tiles = game.savedTiles;
+            aGrid = new AnimationGrid(tiles.length, tiles.length);
+        } else {
+            tiles = game.grid.field;
+            aGrid = game.aGrid;
+        }
+        
         // Outputting the individual cells
         for (int xx = 0; xx < game.numSquaresX; xx++) {
             for (int yy = 0; yy < game.numSquaresY; yy++) {
@@ -230,14 +275,14 @@ public class MainView extends View
                 int sY = startingY + gridWidth + (cellSize + gridWidth) * yy;
                 int eY = sY + cellSize;
 
-                Tile currentTile = game.grid.getCellContent(xx,yy);
+                Tile currentTile = tiles[xx][yy];
                 if (currentTile != null) {
                     //Get and represent the value of the tile
                     int value = currentTile.getValue();
                     int index = log2(value);
 
                     //Check for any active animations
-                    ArrayList<AnimationCell> aArray = game.aGrid.getAnimationCell(xx, yy);
+                    ArrayList<AnimationCell> aArray = aGrid.getAnimationCell(xx, yy);
                     boolean animated = false;
                     for (int i = aArray.size() - 1; i >= 0; i--) {
                         AnimationCell aCell = aArray.get(i);
@@ -344,7 +389,12 @@ public class MainView extends View
 
     public void tick() {
         currentTime = System.nanoTime();
-        game.aGrid.tickAll(currentTime - lastFPSTime);
+        
+        try {
+            game.aGrid.tickAll(currentTime - lastFPSTime);
+        } catch (ConcurrentModificationException e) {
+            // Might be modified in background
+        }
         lastFPSTime = currentTime;
     }
 
@@ -452,6 +502,7 @@ public class MainView extends View
         
         //Loading resources
         game = new MainGame(context, this);
+        ai = new AI(game);
         
         if (tileTexts.length > 12) {
             game.numSquaresX = 5;
@@ -494,6 +545,7 @@ public class MainView extends View
         setOnTouchListener(listener);
         setOnKeyListener(listener);
         game.newGame();
+        aiThread.start();
     }
 
 }

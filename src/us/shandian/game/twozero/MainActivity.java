@@ -83,6 +83,9 @@ public class MainActivity extends Activity {
                 i.setClass(this, SettingsActivity.class);
                 startActivity(i);
                 return true;
+            case R.id.menu_autorun:
+                view.runAi = true;
+                return true;
         }
         return true;
     }

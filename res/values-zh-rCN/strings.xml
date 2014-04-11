@@ -8,6 +8,7 @@
 
     <string name="menu_undo">反悔</string>
     <string name="menu_settings">设置</string>
+	<string name="menu_autorun">自动运行</string>
 
     <!-- Settings -->
     <string name="settings_sensitivity">灵敏度</string>
