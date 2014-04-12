@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.ConcurrentModificationException;
 
 import us.shandian.game.twozero.settings.SettingsProvider;
@@ -90,8 +91,12 @@ public class MainView extends View
 
         @Override
         public void handleMessage(Message msg) {
-            game.move((int) msg.obj);
-            invalidate();
+            if (!game.move((int) msg.obj)) {
+                // If not moved, random move
+                this.sendMessage(this.obtainMessage(0, Math.abs(new Random().nextInt()) % 4));
+            } else {
+                invalidate();
+            }
         }
     };
     

@@ -125,13 +125,13 @@ public class MainGame {
         }
     }
 
-    public void move (int direction) {
+    public boolean move (int direction) {
         saveState();
         
         aGrid = new AnimationGrid(numSquaresX, numSquaresY);
         // 0: up, 1: right, 2: down, 3: left
         if (lose || won) {
-            return;
+            return false;
         }
         Cell vector = getVector(direction);
         List<Integer> traversalsX = buildTraversalsX(vector);
@@ -202,6 +202,8 @@ public class MainGame {
             mView.resyncTime();
             mView.postInvalidate();
         }
+        
+        return moved;
     }
 
     public void endGame() {
