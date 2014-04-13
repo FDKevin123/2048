@@ -1,15 +1,20 @@
 package us.shandian.game.twozero;
 
+import java.util.ArrayList;
+
 /*
  *
  * This is a simple AI for the 2048 game
- * Based on Monte Carlo method
+ * Based on alpha-beta method
  *
  */
 
 public class AI
 {
-    static final int SEARCH_DEPTH = 4;
+    enum Player {
+        DOCTOR,
+        DALEKS
+    }
     
     static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
                        WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f;
@@ -20,51 +25,136 @@ public class AI
         mGame = game;
     }
     
-    private float tryToMove(MainGame game, int depth) {
+    public int getBestMove() {
         
-        if (depth == 0) {
-            return evaluate(game);
-        } else {
-            float maxScore = 0;
+        int bestMove = -1;
+        int depth = 0;
+        long start = System.nanoTime();
+        
+        do {
+            int move = search(mGame.clone(), depth, Float.MIN_VALUE, Float.MAX_VALUE, Player.DOCTOR)[0];
+            if (move == -1) {
+                break;
+            } else {
+                bestMove = move;
+                depth++;
+            }
+        } while (System.nanoTime() - start < MainView.BASE_ANIMATION_TIME * 2);
+        
+        return bestMove;
+    }
+    
+    /*
+     *
+     * Search for the best move
+     * Based on alpha-beta search method
+     * Simulates two players' game
+     * The Doctor V.S. The Daleks
+     *
+     */
+    private Object[] search(MainGame game, int depth, float alpha, float beta, Player player) {
+        int bestMove = -1;
+        float bestScore = 0;
+        
+        if (player == Player.DOCTOR) {
+            // The Doctoe's turn
+            // Doctor wants to defeat the Daleks
+            bestScore = alpha;
+            
             for (int i = 0; i <= 3; i++) {
                 MainGame g = game.clone();
-                g.addRandomTile();
-                
+                    
                 if (!g.move(i)) {
                     continue;
                 }
                 
-                float score = tryToMove(game, depth - 1);
+                // Just return if this is at the bottom
+                if (depth == 0) {
+                    return new Object[]{i, evaluate(game)};
+                }
                 
-                if (score > maxScore) {
-                    maxScore = score;
+                // Pass the game to the Daleks
+                float score = search(g, depth - 1, bestScore, beta, Player.DALEKS)[1];
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = i;
+                }
+                
+                // We have found a much much better move
+                // So, cutoff
+                if (bestScore > beta) {
+                    return new Object[]{bestMove, beta};
                 }
             }
-            return maxScore;
-        }
-    }
-    
-    public int getBestMove() {
-        
-        int bestMove = 0;
-        float bestScore = 0;
-        
-        for (int i = 0; i <= 3; i++) {
-            MainGame game = mGame.clone();
+        } else if (player == Player.DALEKS) {
+            // The Daleks' turn
+            // "EXTETMINATE!"
+            bestScore = beta;
             
-            if (!game.move(i)) {
-                continue;
+            int minScore = Integer.MAX_VALUE;
+            
+            ArrayList<Object[]> worst = new ArrayList<Object[]>();
+            
+            ArrayList<Cell> cells = game.grid.getAvailableCells();
+            
+            // Pick out the worst ones for the Doctor
+            // Try to insert 2
+            for (Cell cell : cells) {
+                Tile t = new Tile(cell, 2);
+                game.grid.insertTile(t);
+                int score = getSmoothness(game);
+                if (score < minScore) {
+                    minScore = score;
+                    worst.clear();
+                    worst.add(new Object[]{cell, 2});
+                } else if (score == minScore) {
+                    worst.add(new Object[]{cell, 2});
+                }
+                game.grid.removeTile(t);
             }
             
-            float score = tryToMove(game, SEARCH_DEPTH);
-            
-            if (score > bestScore) {
-                bestMove = i;
-                bestScore = score;
+            // Try to insert 4
+            for (Cell cell : cells) {
+                Tile t = new Tile(cell, 4);
+                game.grid.insertTile(t);
+                int score = getSmoothness(game);
+                if (score < minScore) {
+                    minScore = score;
+                    worst.clear();
+                    worst.add(new Object[]{cell, 4});
+                } else if (score == minScore) {
+                    worst.add(new Object[]{cell, 4});
+                }
+                game.grid.removeTile(t);
             }
+            
+            // Play all the games with the Doctor
+            for (Object[] obj : worst) {
+                Cell cell = (Cell) obj[0];
+                int value = (int) obj[1];
+                MainGame g = game.clone();
+                
+                Tile t = new Tile(cell, value);
+                g.grid.insertTile(t);
+                
+                // Pass the game to human
+                float score = search(g, depth, alpha, bestScore, Player.DOCTOR)[1];
+                
+                if (score < bestScore) {
+                    bestScore = score;
+                }
+                
+                // Computer lose
+                // Cutoff
+                if (bestScore < alpha) {
+                    return new Object[]{-1, alpha};
+                }
+            }
+            //return new Object[]{bestMove, beta};
         }
         
-        return bestMove;
+        return new Object[]{bestMove, bestScore};
     }
     
     // Evaluate how is it if we take the step
@@ -173,5 +263,45 @@ public class AI
             }
         }
         return max;
+    }
+    
+    private int countIslands(MainGame game) {
+        int islands = 0;
+        
+        for (int x = 0; x < game.numSquaresX; x++) {
+            for (int y = 0; y < game.numSquaresY; y++) {
+                if (game.grid.isCellOccupied(new Cell(x, y))) {
+                    game.grid.getCellContent(x, y).marked = false;
+                }
+            }
+        }
+        
+        for (int x = 0; x < game.numSquaresX; x++) {
+            for (int y = 0; y < game.numSquaresY; y++) {
+                if (game.grid.isCellOccupied(new Cell(x, y))) {
+                    Tile t = game.grid.getCellContent(x, y);
+                    if (!t.marked) {
+                        islands++;
+                        mark(game, x, y, t.getValue());
+                    }
+                }
+            }
+        }
+        
+        return islands;
+    }
+    
+    private void mark(MainGame game, int x, int y, int value) {
+        if (game.grid.isCellWithinBounds(x, y) && game.grid.isCellOccupied(new Cell(x, y))) {
+            Tile t = game.grid.getCellContent(x, y);
+            if (!t.marked && t.getValue() == value) {
+                t.marked = true;
+                
+                for (int i = 0; i <= 3; i++) {
+                    Cell vector = game.getVector(i);
+                    mark(game, x + vector.getX(), y + vector.getY(), value);
+                }
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ package us.shandian.game.twozero;
 public class Cell {
     private int x;
     private int y;
+    public boolean marked = false;
 
     public Cell(int x, int y) {
         this.x = x;
