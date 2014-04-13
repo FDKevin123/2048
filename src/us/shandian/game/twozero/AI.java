@@ -11,8 +11,8 @@ public class AI
 {
     static final int SEARCH_DEPTH = 4;
     
-    static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
-                       WEIGHT_EMPTY = 3.6f, WEIGHT_MAX = 1.0f,
+    static final float WEIGHT_SMOOTH = 0.2f, WEIGHT_MONO = 2.5f,
+                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f,
                        WEIGHT_SCORE = 0.9f;
     
     MainGame mGame;
