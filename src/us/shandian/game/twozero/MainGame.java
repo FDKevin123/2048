@@ -189,7 +189,9 @@ public class MainGame {
         }
 
         if (moved) {
-            addRandomTile();
+            if (!emulating) {
+                addRandomTile();
+            }
 
             if (!emulating && !movesAvailable()) {
                 lose = true;
