@@ -108,7 +108,7 @@ public class MainView extends View
                     runAi = false;
                 }
                 if (!runAi) continue;
-                int bestMove = ai.getBestMove(1);
+                int bestMove = ai.getBestMove();
                 aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
                 
                 try {
@@ -264,13 +264,6 @@ public class MainView extends View
     public void drawCells(Canvas canvas) {
         Tile[][] tiles;
         AnimationGrid aGrid;
-        if (game.emulating) {
-            tiles = game.savedTiles;
-            aGrid = new AnimationGrid(tiles.length, tiles.length);
-        } else {
-            tiles = game.grid.field;
-            aGrid = game.aGrid;
-        }
         
         // Outputting the individual cells
         for (int xx = 0; xx < game.numSquaresX; xx++) {
@@ -280,14 +273,14 @@ public class MainView extends View
                 int sY = startingY + gridWidth + (cellSize + gridWidth) * yy;
                 int eY = sY + cellSize;
 
-                Tile currentTile = tiles[xx][yy];
+                Tile currentTile = game.grid.field[xx][yy];
                 if (currentTile != null) {
                     //Get and represent the value of the tile
                     int value = currentTile.getValue();
                     int index = log2(value);
 
                     //Check for any active animations
-                    ArrayList<AnimationCell> aArray = aGrid.getAnimationCell(xx, yy);
+                    ArrayList<AnimationCell> aArray = game.aGrid.getAnimationCell(xx, yy);
                     boolean animated = false;
                     for (int i = aArray.size() - 1; i >= 0; i--) {
                         AnimationCell aCell = aArray.get(i);

@@ -117,4 +117,22 @@ public class Grid {
             }
         }
     }
+    
+    @Override
+    public Grid clone() {
+        Tile[][] newField = new Tile[sizeX][sizeY];
+        for (int xx = 0; xx < field.length; xx++) {
+            for (int yy = 0; yy < field.length; yy++) {
+                if (field[xx][yy] == null) {
+                    newField[xx][yy] = null;
+                } else {
+                    newField[xx][yy] = new Tile(xx, yy, field[xx][yy].getValue());
+                }
+            }
+        }
+        
+        Grid newGrid = new Grid(sizeX, sizeY);
+        newGrid.field = newField;
+        return newGrid;
+    }
 }

@@ -11,9 +11,8 @@ public class AI
 {
     static final int SEARCH_DEPTH = 4;
     
-    static final float WEIGHT_SMOOTH = 0.2f, WEIGHT_MONO = 2.5f,
-                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f,
-                       WEIGHT_SCORE = 0.9f;
+    static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
+                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f;
     
     MainGame mGame;
     
@@ -21,80 +20,80 @@ public class AI
         mGame = game;
     }
     
-    private float tryToMove(int move, int depth) {
-        long nowScore = mGame.score;
+    private float tryToMove(MainGame game, int depth) {
         
-        boolean moved = mGame.move(move);
-        
-        Tile[][] savedField = mGame.grid.lastField;
-        
-        // Evaluate
-        float score = moved ? evaluate() : -1f;
-        if (depth <= SEARCH_DEPTH && moved) {
-            int direction = getBestMove(depth + 1);
-            mGame.move(direction);
-            score += evaluate();
-            mGame.revertState();
+        if (depth == 0) {
+            return evaluate(game);
+        } else {
+            float maxScore = 0;
+            for (int i = 0; i <= 3; i++) {
+                MainGame g = game.clone();
+                g.addRandomTile();
+                
+                if (!g.move(i)) {
+                    continue;
+                }
+                
+                float score = tryToMove(game, depth - 1);
+                
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+            return maxScore;
         }
-        
-        // Reverse
-        mGame.grid.lastField = savedField;
-        mGame.lastScore = nowScore;
-        mGame.revertState();
-        
-        return score;
     }
     
-    public int getBestMove(int depth) {
-        if (depth == 1) mGame.startEmulation();
+    public int getBestMove() {
         
         int bestMove = 0;
-        float lastScore = 0;
+        float bestScore = 0;
         
         for (int i = 0; i <= 3; i++) {
-            float score = tryToMove(i, depth);
+            MainGame game = mGame.clone();
             
-            if (score > lastScore) {
-                bestMove = i;
+            if (!game.move(i)) {
+                continue;
             }
             
-            lastScore = score;
+            float score = tryToMove(game, SEARCH_DEPTH);
+            
+            if (score > bestScore) {
+                bestMove = i;
+                bestScore = score;
+            }
         }
-        
-        if (depth == 1) mGame.emulating = false;
         
         return bestMove;
     }
     
     // Evaluate how is it if we take the step
-    private float evaluate() {
-        int smooth = getSmoothness();
-        int mono = getMonotonticity();
-        int empty = mGame.grid.getAvailableCells().size();
-        int max = getMaxValue();
-        long score = mGame.score;
+    private float evaluate(MainGame game) {
+        int smooth = getSmoothness(game);
+        int mono = getMonotonticity(game);
+        int empty = game.grid.getAvailableCells().size();
+        int max = getMaxValue(game);
         
         return (float) (smooth * WEIGHT_SMOOTH
                     + mono * WEIGHT_MONO
                     + Math.log(empty) * WEIGHT_EMPTY
-                    + max * WEIGHT_MAX
-                    + score * WEIGHT_SCORE);
+                    + max * WEIGHT_MAX);
     }
     
     // How smooth the grid is
-    private int getSmoothness() {
+    private int getSmoothness(MainGame game) {
         int smoothness = 0;
-        for (int x = 0; x < mGame.numSquaresX; x++) {
-            for (int y = 0; y < mGame.numSquaresY; y++) {
-                Tile t = mGame.grid.field[x][y];
+        for (int x = 0; x < game.numSquaresX; x++) {
+            for (int y = 0; y < game.numSquaresY; y++) {
+                Tile t = game.grid.field[x][y];
                 if (t != null) {
                     int value = (int) (Math.log(t.getValue()) / Math.log(2));
                     for (int direction = 1; direction <= 2; direction++) {
-                        Cell vector = mGame.getVector(direction);
-                        Cell targetCell = mGame.findFarthestPosition(new Cell(x, y), vector)[1];
+                        Cell vector = game.getVector(direction);
+                        Cell targetCell = game.findFarthestPosition(new Cell(x, y), vector)[1];
                         
-                        if (mGame.grid.isCellOccupied(targetCell)) {
-                            Tile target = mGame.grid.getCellContent(targetCell);
+                        if (game.grid.isCellOccupied(targetCell)) {
+                            Tile target = game.grid.getCellContent(targetCell);
                             int targetValue = (int) (Math.log(target.getValue()) / Math.log(2));
                             
                             smoothness -= Math.abs(value - targetValue);
@@ -109,22 +108,22 @@ public class AI
     }
     
     // How monotonic the grid is
-    private int getMonotonticity() {
+    private int getMonotonticity(MainGame game) {
         int[] totals = {0, 0, 0, 0};
         
         // Vertical
-        for (int x = 0; x < mGame.numSquaresX; x++) {
+        for (int x = 0; x < game.numSquaresX; x++) {
             int current = 0;
-            while (current < mGame.numSquaresY && mGame.grid.field[x][current] == null) current++;
-            for (int next = current + 1; next < mGame.numSquaresY; next = current + 1) {
-                while (next < mGame.numSquaresY && mGame.grid.field[x][next] == null) {
+            while (current < game.numSquaresY && game.grid.field[x][current] == null) current++;
+            for (int next = current + 1; next < game.numSquaresY; next = current + 1) {
+                while (next < game.numSquaresY && game.grid.field[x][next] == null) {
                     next++;
                 }
-                if (next >= mGame.numSquaresY) break;
-                int currentValue = (int) (mGame.grid.field[x][current] != null ? 
-                                       Math.log(mGame.grid.field[x][current].getValue()) / Math.log(2) : 0);
+                if (next >= game.numSquaresY) break;
+                int currentValue = (int) (game.grid.field[x][current] != null ? 
+                                       Math.log(game.grid.field[x][current].getValue()) / Math.log(2) : 0);
                 int nextValue = (int) (mGame.grid.field[x][next] != null ? 
-                                       Math.log(mGame.grid.field[x][next].getValue()) / Math.log(2) : 0);
+                                       Math.log(game.grid.field[x][next].getValue()) / Math.log(2) : 0);
                 if (currentValue > nextValue) {
                     totals[0] = currentValue - nextValue;
                 } else if (currentValue < nextValue) {
@@ -135,18 +134,18 @@ public class AI
         }
         
         // Horizontal
-        for (int y = 0; y < mGame.numSquaresY; y++) {
+        for (int y = 0; y < game.numSquaresY; y++) {
             int current = 0;
-            while (current < mGame.numSquaresX && mGame.grid.field[current][y] == null) current++;
-            for (int next = current + 1; next < mGame.numSquaresX; next = current + 1) {
-                while (next < mGame.numSquaresX && mGame.grid.field[next][y] == null) {
+            while (current < game.numSquaresX && game.grid.field[current][y] == null) current++;
+            for (int next = current + 1; next < game.numSquaresX; next = current + 1) {
+                while (next < game.numSquaresX && mGame.grid.field[next][y] == null) {
                     next++;
                 }
-                if (next >= mGame.numSquaresX) break;
-                int currentValue = (int) (mGame.grid.field[current][y] != null ? 
-                                       Math.log(mGame.grid.field[current][y].getValue()) / Math.log(2) : 0);
-                int nextValue = (int) (mGame.grid.field[next][y] != null ? 
-                                       Math.log(mGame.grid.field[next][y].getValue()) / Math.log(2) : 0);
+                if (next >= game.numSquaresX) break;
+                int currentValue = (int) (game.grid.field[current][y] != null ? 
+                                       Math.log(game.grid.field[current][y].getValue()) / Math.log(2) : 0);
+                int nextValue = (int) (game.grid.field[next][y] != null ? 
+                                       Math.log(game.grid.field[next][y].getValue()) / Math.log(2) : 0);
                 if (currentValue > nextValue) {
                     totals[2] = currentValue - nextValue;
                 } else if (currentValue < nextValue) {
@@ -159,13 +158,13 @@ public class AI
         return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3]);
     }
     
-    private int getMaxValue() {
+    private int getMaxValue(MainGame game) {
         int max = 0;
-        for (int x = 0; x < mGame.numSquaresX; x++) {
-            for (int y = 0; y < mGame.numSquaresY; y++) {
+        for (int x = 0; x < game.numSquaresX; x++) {
+            for (int y = 0; y < game.numSquaresY; y++) {
                 Cell cell = new Cell(x, y);
-                if (mGame.grid.isCellOccupied(cell)) {
-                    Tile t = mGame.grid.getCellContent(cell);
+                if (game.grid.isCellOccupied(cell)) {
+                    Tile t = game.grid.getCellContent(cell);
                     int value = t.getValue();
                     if (value > max) {
                         max = value;

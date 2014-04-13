@@ -22,8 +22,6 @@ public class MainGame {
     long highScore = 0;
     boolean won = false;
     boolean lose = false;
-    
-    Tile[][] savedTiles;
 
     Context mContext;
 
@@ -74,7 +72,7 @@ public class MainGame {
             int value = Math.random() < 0.9 ? 2 : 4;
             Tile tile = new Tile(grid.randomAvailableCell(), value);
             grid.insertTile(tile);
-            aGrid.startAnimation(tile.getX(), tile.getY(), SPAWN_ANIMATION,
+            if (!emulating) aGrid.startAnimation(tile.getX(), tile.getY(), SPAWN_ANIMATION,
                     SPAWN_ANIMATION_TIME, MOVE_ANIMATION_TIME, null); //Direction: -1 = EXPANDING
         }
     }
@@ -128,7 +126,7 @@ public class MainGame {
     public boolean move (int direction) {
         saveState();
         
-        aGrid = new AnimationGrid(numSquaresX, numSquaresY);
+        if (!emulating) aGrid = new AnimationGrid(numSquaresX, numSquaresY);
         // 0: up, 1: right, 2: down, 3: left
         if (lose || won) {
             return false;
@@ -160,11 +158,13 @@ public class MainGame {
                         // Converge the two tiles' positions
                         tile.updatePosition(positions[1]);
 
-                        int[] extras = {xx, yy};
-                        aGrid.startAnimation(merged.getX(), merged.getY(), MOVE_ANIMATION,
-                                MOVE_ANIMATION_TIME, 0, extras); //Direction: 0 = MOVING MERGED
-                        aGrid.startAnimation(merged.getX(), merged.getY(), MERGE_ANIMATION,
-                                SPAWN_ANIMATION_TIME, MOVE_ANIMATION_TIME, null);
+                        if (!emulating) {
+                            int[] extras = {xx, yy};
+                            aGrid.startAnimation(merged.getX(), merged.getY(), MOVE_ANIMATION,
+                                    MOVE_ANIMATION_TIME, 0, extras); //Direction: 0 = MOVING MERGED
+                            aGrid.startAnimation(merged.getX(), merged.getY(), MERGE_ANIMATION,
+                                    SPAWN_ANIMATION_TIME, MOVE_ANIMATION_TIME, null);
+                        }
 
                         // Update the score
                         score = score + merged.getValue();
@@ -178,7 +178,7 @@ public class MainGame {
                     } else {
                         moveTile(tile, positions[0]);
                         int[] extras = {xx, yy, 0};
-                        aGrid.startAnimation(positions[0].getX(), positions[0].getY(), MOVE_ANIMATION, MOVE_ANIMATION_TIME, 0, extras); //Direction: 1 = MOVING NO MERGE
+                        if (!emulating) aGrid.startAnimation(positions[0].getX(), positions[0].getY(), MOVE_ANIMATION, MOVE_ANIMATION_TIME, 0, extras); //Direction: 1 = MOVING NO MERGE
                     }
 
                     if (!positionsEqual(cell, tile)) {
@@ -298,9 +298,15 @@ public class MainGame {
         return first.getX() == second.getX() && first.getY() == second.getY();
     }
     
-    public void startEmulation() {
-        emulating = true;
-        grid.saveTiles();
-        savedTiles = grid.lastField;
+    // Only for emulation
+    @Override
+    public MainGame clone() {
+        MainGame newGame = new MainGame(mContext, null);
+        
+        newGame.grid = grid.clone();
+        newGame.score = score;
+        newGame.emulating = true;
+        
+        return newGame;
     }
 }
