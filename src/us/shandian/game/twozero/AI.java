@@ -9,10 +9,11 @@ package us.shandian.game.twozero;
 
 public class AI
 {
-    static final int SEARCH_DEPTH = 3;
+    static final int SEARCH_DEPTH = 4;
     
     static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
-                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f;
+                       WEIGHT_EMPTY = 3.6f, WEIGHT_MAX = 1.0f,
+                       WEIGHT_SCORE = 0.9f;
     
     MainGame mGame;
     
@@ -71,11 +72,13 @@ public class AI
         int mono = getMonotonticity();
         int empty = mGame.grid.getAvailableCells().size();
         int max = getMaxValue();
+        long score = mGame.score;
         
         return (float) (smooth * WEIGHT_SMOOTH
                     + mono * WEIGHT_MONO
                     + Math.log(empty) * WEIGHT_EMPTY
-                    + max * WEIGHT_MAX);
+                    + max * WEIGHT_MAX
+                    + score * WEIGHT_SCORE);
     }
     
     // How smooth the grid is
