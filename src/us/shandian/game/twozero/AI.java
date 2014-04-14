@@ -27,19 +27,19 @@ public class AI
     
     public int getBestMove() {
         
-        int bestMove = -1;
+        int bestMove = 0;
         int depth = 0;
         long start = System.nanoTime();
         
         do {
-            int move = search(mGame.clone(), depth, Float.MIN_VALUE, Float.MAX_VALUE, Player.DOCTOR)[0];
+            int move = search(mGame.clone(), depth, -10000, 10000, Player.DOCTOR)[0];
             if (move == -1) {
                 break;
             } else {
                 bestMove = move;
                 depth++;
             }
-        } while (System.nanoTime() - start < MainView.BASE_ANIMATION_TIME * 2);
+        } while (System.nanoTime() - start < MainView.BASE_ANIMATION_TIME);
         
         return bestMove;
     }
@@ -52,9 +52,9 @@ public class AI
      * The Doctor V.S. The Daleks
      *
      */
-    private Object[] search(MainGame game, int depth, float alpha, float beta, Player player) {
+    private Object[] search(MainGame game, int depth, int alpha, int beta, Player player) {
         int bestMove = -1;
-        float bestScore = 0;
+        int bestScore = 0;
         
         if (player == Player.DOCTOR) {
             // The Doctoe's turn
@@ -68,13 +68,15 @@ public class AI
                     continue;
                 }
                 
-                // Just return if this is at the bottom
-                if (depth == 0) {
-                    return new Object[]{i, evaluate(game)};
-                }
+                int score = 0;
                 
-                // Pass the game to the Daleks
-                float score = search(g, depth - 1, bestScore, beta, Player.DALEKS)[1];
+                if (depth == 0) {
+                    // Just eval if this is at the bottom
+                    score = evaluate(g);
+                } else {
+                    // Pass the game to the Daleks
+                    score = search(g, depth - 1, bestScore, beta, Player.DALEKS)[1];
+                }
                 
                 if (score > bestScore) {
                     bestScore = score;
@@ -92,9 +94,9 @@ public class AI
             // "EXTETMINATE!"
             bestScore = beta;
             
-            int minScore = Integer.MAX_VALUE;
+            int maxScore = Integer.MIN_VALUE;
             
-            ArrayList<Object[]> worst = new ArrayList<Object[]>();
+            ArrayList<Object[]> conditions = new ArrayList<Object[]>();
             
             ArrayList<Cell> cells = game.grid.getAvailableCells();
             
@@ -103,14 +105,8 @@ public class AI
             for (Cell cell : cells) {
                 Tile t = new Tile(cell, 2);
                 game.grid.insertTile(t);
-                int score = getSmoothness(game);
-                if (score < minScore) {
-                    minScore = score;
-                    worst.clear();
-                    worst.add(new Object[]{cell, 2});
-                } else if (score == minScore) {
-                    worst.add(new Object[]{cell, 2});
-                }
+                int score = -getSmoothness(game) + countIslands(game);
+                conditions.add(new Object[]{cell, 2, score});
                 game.grid.removeTile(t);
             }
             
@@ -118,19 +114,26 @@ public class AI
             for (Cell cell : cells) {
                 Tile t = new Tile(cell, 4);
                 game.grid.insertTile(t);
-                int score = getSmoothness(game);
-                if (score < minScore) {
-                    minScore = score;
-                    worst.clear();
-                    worst.add(new Object[]{cell, 4});
-                } else if (score == minScore) {
-                    worst.add(new Object[]{cell, 4});
-                }
+                int score = -getSmoothness(game) + countIslands(game);
+                conditions.add(new Object[]{cell, 4, score});
                 game.grid.removeTile(t);
             }
             
+            // Find the max score(the worst for the Doctor)
+            for (Object[] obj : conditions) {
+                int score = (int) obj[2];
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+            
             // Play all the games with the Doctor
-            for (Object[] obj : worst) {
+            for (Object[] obj : conditions) {
+                int s = obj[2];
+                
+                // If not worst, just skip it
+                if (s != maxScore) continue;
+                
                 Cell cell = (Cell) obj[0];
                 int value = (int) obj[1];
                 MainGame g = game.clone();
@@ -139,7 +142,7 @@ public class AI
                 g.grid.insertTile(t);
                 
                 // Pass the game to human
-                float score = search(g, depth, alpha, bestScore, Player.DOCTOR)[1];
+                int score = search(g, depth, alpha, bestScore, Player.DOCTOR)[1];
                 
                 if (score < bestScore) {
                     bestScore = score;
@@ -158,14 +161,14 @@ public class AI
     }
     
     // Evaluate how is it if we take the step
-    private float evaluate(MainGame game) {
-        int smooth = getSmoothness(game);
-        int mono = getMonotonticity(game);
+    private int evaluate(MainGame game) {
+        //int smooth = getSmoothness(game);
+        //int mono = getMonotonticity(game);
         int empty = game.grid.getAvailableCells().size();
         int max = getMaxValue(game);
         
-        return (float) (smooth * WEIGHT_SMOOTH
-                    + mono * WEIGHT_MONO
+        return (int) (//smooth * WEIGHT_SMOOTH
+                    //+ mono * WEIGHT_MONO
                     + Math.log(empty) * WEIGHT_EMPTY
                     + max * WEIGHT_MAX);
     }
@@ -204,20 +207,20 @@ public class AI
         // Vertical
         for (int x = 0; x < game.numSquaresX; x++) {
             int current = 0;
-            while (current < game.numSquaresY && game.grid.field[x][current] == null) current++;
+            while (current < game.numSquaresY && game.grid.isCellAvailable(new Cell(x, current))) current++;
             for (int next = current + 1; next < game.numSquaresY; next = current + 1) {
-                while (next < game.numSquaresY && game.grid.field[x][next] == null) {
+                while (next < game.numSquaresY && game.grid.isCellAvailable(new Cell(x, next))) {
                     next++;
                 }
                 if (next >= game.numSquaresY) break;
-                int currentValue = (int) (game.grid.field[x][current] != null ? 
+                int currentValue = (int) (game.grid.isCellOccupied(new Cell(x, current)) ? 
                                        Math.log(game.grid.field[x][current].getValue()) / Math.log(2) : 0);
-                int nextValue = (int) (mGame.grid.field[x][next] != null ? 
+                int nextValue = (int) (game.grid.isCellOccupied(new Cell(x, next)) ? 
                                        Math.log(game.grid.field[x][next].getValue()) / Math.log(2) : 0);
                 if (currentValue > nextValue) {
-                    totals[0] = currentValue - nextValue;
+                    totals[0] += currentValue - nextValue;
                 } else if (currentValue < nextValue) {
-                    totals[1] = nextValue - currentValue;
+                    totals[1] += nextValue - currentValue;
                 }
                 current = next;
             }
@@ -226,20 +229,20 @@ public class AI
         // Horizontal
         for (int y = 0; y < game.numSquaresY; y++) {
             int current = 0;
-            while (current < game.numSquaresX && game.grid.field[current][y] == null) current++;
+            while (current < game.numSquaresX && game.grid.isCellAvailable(new Cell(current, y))) current++;
             for (int next = current + 1; next < game.numSquaresX; next = current + 1) {
-                while (next < game.numSquaresX && mGame.grid.field[next][y] == null) {
+                while (next < game.numSquaresX && game.grid.isCellAvailable(new Cell(next, y))) {
                     next++;
                 }
                 if (next >= game.numSquaresX) break;
-                int currentValue = (int) (game.grid.field[current][y] != null ? 
+                int currentValue = (int) (game.grid.isCellOccupied(new Cell(current, y)) ? 
                                        Math.log(game.grid.field[current][y].getValue()) / Math.log(2) : 0);
-                int nextValue = (int) (game.grid.field[next][y] != null ? 
+                int nextValue = (int) (game.grid.isCellOccupied(new Cell(next, y)) ? 
                                        Math.log(game.grid.field[next][y].getValue()) / Math.log(2) : 0);
                 if (currentValue > nextValue) {
-                    totals[2] = currentValue - nextValue;
+                    totals[2] += currentValue - nextValue;
                 } else if (currentValue < nextValue) {
-                    totals[3] = nextValue - currentValue;
+                    totals[3] += nextValue - currentValue;
                 }
                 current = next;
             }
