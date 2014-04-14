@@ -17,7 +17,8 @@ public class AI
     }
     
     static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
-                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f;
+                       WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f,
+                       WEIGHT_ISLANDS = 0.5f, WEIGHT_TWOANDFOUR = 2.5f;
     
     MainGame mGame;
     
@@ -162,15 +163,19 @@ public class AI
     
     // Evaluate how is it if we take the step
     private int evaluate(MainGame game) {
-        //int smooth = getSmoothness(game);
+        int smooth = getSmoothness(game);
         //int mono = getMonotonticity(game);
         int empty = game.grid.getAvailableCells().size();
         int max = getMaxValue(game);
+        int islands = countIslands(game);
+        int twoAndFour = countTwosAndFours(game);
         
-        return (int) (//smooth * WEIGHT_SMOOTH
+        return (int) (smooth * WEIGHT_SMOOTH
                     //+ mono * WEIGHT_MONO
                     + Math.log(empty) * WEIGHT_EMPTY
-                    + max * WEIGHT_MAX);
+                    + max * WEIGHT_MAX
+                    - islands * WEIGHT_ISLANDS
+                    - twoAndFour * WEIGHT_TWOANDFOUR);
     }
     
     // How smooth the grid is
@@ -202,53 +207,8 @@ public class AI
     
     // How monotonic the grid is
     private int getMonotonticity(MainGame game) {
-        int[] totals = {0, 0, 0, 0};
-        
-        // Vertical
-        for (int x = 0; x < game.numSquaresX; x++) {
-            int current = 0;
-            while (current < game.numSquaresY && game.grid.isCellAvailable(new Cell(x, current))) current++;
-            for (int next = current + 1; next < game.numSquaresY; next = current + 1) {
-                while (next < game.numSquaresY && game.grid.isCellAvailable(new Cell(x, next))) {
-                    next++;
-                }
-                if (next >= game.numSquaresY) break;
-                int currentValue = (int) (game.grid.isCellOccupied(new Cell(x, current)) ? 
-                                       Math.log(game.grid.field[x][current].getValue()) / Math.log(2) : 0);
-                int nextValue = (int) (game.grid.isCellOccupied(new Cell(x, next)) ? 
-                                       Math.log(game.grid.field[x][next].getValue()) / Math.log(2) : 0);
-                if (currentValue > nextValue) {
-                    totals[0] += currentValue - nextValue;
-                } else if (currentValue < nextValue) {
-                    totals[1] += nextValue - currentValue;
-                }
-                current = next;
-            }
-        }
-        
-        // Horizontal
-        for (int y = 0; y < game.numSquaresY; y++) {
-            int current = 0;
-            while (current < game.numSquaresX && game.grid.isCellAvailable(new Cell(current, y))) current++;
-            for (int next = current + 1; next < game.numSquaresX; next = current + 1) {
-                while (next < game.numSquaresX && game.grid.isCellAvailable(new Cell(next, y))) {
-                    next++;
-                }
-                if (next >= game.numSquaresX) break;
-                int currentValue = (int) (game.grid.isCellOccupied(new Cell(current, y)) ? 
-                                       Math.log(game.grid.field[current][y].getValue()) / Math.log(2) : 0);
-                int nextValue = (int) (game.grid.isCellOccupied(new Cell(next, y)) ? 
-                                       Math.log(game.grid.field[next][y].getValue()) / Math.log(2) : 0);
-                if (currentValue > nextValue) {
-                    totals[2] += currentValue - nextValue;
-                } else if (currentValue < nextValue) {
-                    totals[3] += nextValue - currentValue;
-                }
-                current = next;
-            }
-        }
-        
-        return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3]);
+        // TODO Rewrite this method
+        return 0;
     }
     
     private int getMaxValue(MainGame game) {
@@ -306,5 +266,22 @@ public class AI
                 }
             }
         }
+    }
+    
+    private int countTwosAndFours(MainGame game) {
+        int num = 0;
+        for (int x = 0; x < game.numSquaresX; x++) {
+            for (int y = 0; y < game.numSquaresY; y++) {
+                Cell cell = new Cell(x, y);
+                if (game.grid.isCellOccupied(cell)) {
+                    Tile t = game.grid.getCellContent(cell);
+                    
+                    if (t.getValue() <= 4) {
+                        num++;
+                    }
+                }
+            }
+        }
+        return num;
     }
 }
