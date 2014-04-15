@@ -171,7 +171,7 @@ public class MainGame {
                         highScore = Math.max(score, highScore);
 
                         // The mighty max tile
-                        if (!emulating && merged.getValue() == mView.maxValue) {
+                        if (merged.getValue() == MainView.maxValue) {
                             won = true;
                             endGame();
                         }
@@ -193,7 +193,7 @@ public class MainGame {
                 addRandomTile();
             }
 
-            if (!emulating && !movesAvailable()) {
+            if (!movesAvailable()) {
                 lose = true;
                 endGame();
             }

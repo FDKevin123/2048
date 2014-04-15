@@ -78,7 +78,7 @@ public class MainView extends View
     String highScore, score, youWin, gameOver, instructions = "";
 
     String[] tileTexts;
-    int maxValue;
+    static int maxValue;
     
     static final int BASE_ANIMATION_TIME = 120000000;
     static int textPaddingSize = 0;

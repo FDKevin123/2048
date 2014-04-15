@@ -7,6 +7,7 @@ import java.util.Date;
  *
  * This is a simple AI for the 2048 game
  * Based on alpha-beta method
+ * Credits to: Matt Overlan
  *
  */
 
@@ -72,6 +73,11 @@ public class AI
                     continue;
                 }
                 
+                if (game.won) {
+                    // If won, just do it
+                    return new Object[]{i, 10000};
+                }
+                
                 int score = 0;
                 
                 if (depth == 0) {
@@ -80,6 +86,11 @@ public class AI
                 } else {
                     // Pass the game to the Daleks
                     score = search(g, depth - 1, bestScore, beta, Player.DALEKS)[1];
+                    
+                    // Don't search any further if won
+                    if (score > 9900) {
+                        score--;
+                    }
                 }
                 
                 if (score > bestScore) {
