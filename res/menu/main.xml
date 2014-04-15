@@ -13,5 +13,10 @@
         android:title="@string/menu_autorun"
         android:enabled="true"
         android:showAsAction="never"/>
+    
+    <item android:id="@+id/menu_stopautorun"
+        android:title="@string/menu_stopautorun"
+        android:enabled="false"
+        android:showAsAction="never"/>
 
 </menu>

@@ -67,7 +67,17 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.menu_undo).setEnabled(view.game.grid.canRevert);
+        
+        if (view.aiRunning) {
+            menu.findItem(R.id.menu_undo).setEnabled(false);
+            menu.findItem(R.id.menu_autorun).setEnabled(false);
+            menu.findItem(R.id.menu_stopautorun).setEnabled(true);
+        } else {
+            menu.findItem(R.id.menu_undo).setEnabled(view.game.grid.canRevert);
+            menu.findItem(R.id.menu_autorun).setEnabled(true);
+            menu.findItem(R.id.menu_stopautorun).setEnabled(false);
+        }
+        
         return true;
     }
 
@@ -84,7 +94,10 @@ public class MainActivity extends Activity {
                 startActivity(i);
                 return true;
             case R.id.menu_autorun:
-                view.runAi = true;
+                view.startAi();
+                return true;
+            case R.id.menu_stopautorun:
+                view.stopAi();
                 return true;
         }
         return true;

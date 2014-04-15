@@ -12,6 +12,7 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
+import java.lang.InterruptedException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.ConcurrentModificationException;
@@ -100,27 +101,26 @@ public class MainView extends View
         }
     };
     
-    Thread aiThread = new Thread(new Runnable() {
+    Runnable aiRunnable = new Runnable() {
         @Override
         public void run() {
-            while (true) {
-                if (game.won || game.lose) {
-                    runAi = false;
-                }
-                if (!runAi) continue;
+            while (!game.won && !game.lose) {
                 int bestMove = ai.getBestMove();
                 aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
-                
+
                 try {
                     Thread.sleep(200);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    aiRunning = false;
+                    break;
                 }
             }
         }
-    });
+    };
     
-    boolean runAi = false;
+    Thread aiThread;
+    
+    boolean aiRunning = false;
     
     @Override
     protected void onSizeChanged(int width, int height, int oldw, int oldh)
@@ -500,7 +500,6 @@ public class MainView extends View
         
         //Loading resources
         game = new MainGame(context, this);
-        ai = new AI(game);
         
         if (tileTexts.length > 12) {
             game.numSquaresX = 5;
@@ -543,7 +542,26 @@ public class MainView extends View
         setOnTouchListener(listener);
         setOnKeyListener(listener);
         game.newGame();
+    }
+    
+    public void startAi() {
+        if (aiThread != null) {
+            stopAi();
+        }
+        
+        ai = new AI(game);
+        aiThread = new Thread(aiRunnable);
         aiThread.start();
+        aiRunning = true;
+    }
+    
+    public void stopAi() {
+        aiThread.interrupt();
+        
+        while (aiRunning);
+        
+        aiThread = null;
+        ai = null;
     }
 
 }
