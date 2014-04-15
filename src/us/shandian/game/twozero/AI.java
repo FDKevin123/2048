@@ -1,6 +1,7 @@
 package us.shandian.game.twozero;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /*
  *
@@ -16,6 +17,8 @@ public class AI
         DALEKS
     }
     
+    static final long MAX_CONSIDERING_TIME = 100;
+    
     static final float WEIGHT_SMOOTH = 0.1f, WEIGHT_MONO = 1.0f,
                        WEIGHT_EMPTY = 2.7f, WEIGHT_MAX = 1.0f,
                        WEIGHT_ISLANDS = 0.5f, WEIGHT_TWOANDFOUR = 2.5f;
@@ -30,7 +33,7 @@ public class AI
         
         int bestMove = 0;
         int depth = 0;
-        long start = System.nanoTime();
+        long start = new Date().getTime();
         
         do {
             int move = search(mGame.clone(), depth, -10000, 10000, Player.DOCTOR)[0];
@@ -40,7 +43,7 @@ public class AI
                 bestMove = move;
                 depth++;
             }
-        } while (System.nanoTime() - start < MainView.BASE_ANIMATION_TIME);
+        } while (new Date().getTime() - start < MAX_CONSIDERING_TIME);
         
         return bestMove;
     }
@@ -164,18 +167,18 @@ public class AI
     // Evaluate how is it if we take the step
     private int evaluate(MainGame game) {
         int smooth = getSmoothness(game);
-        //int mono = getMonotonticity(game);
+        int mono = getMonotonticity(game);
         int empty = game.grid.getAvailableCells().size();
         int max = getMaxValue(game);
-        int islands = countIslands(game);
-        int twoAndFour = countTwosAndFours(game);
+        //int islands = countIslands(game);
+        //int twoAndFour = countTwosAndFours(game);
         
         return (int) (smooth * WEIGHT_SMOOTH
-                    //+ mono * WEIGHT_MONO
+                    + mono * WEIGHT_MONO
                     + Math.log(empty) * WEIGHT_EMPTY
                     + max * WEIGHT_MAX
-                    - islands * WEIGHT_ISLANDS
-                    - twoAndFour * WEIGHT_TWOANDFOUR);
+                    //- islands * WEIGHT_ISLANDS
+                    /*- twoAndFour * WEIGHT_TWOANDFOUR*/);
     }
     
     // How smooth the grid is
@@ -207,8 +210,63 @@ public class AI
     
     // How monotonic the grid is
     private int getMonotonticity(MainGame game) {
-        // TODO Rewrite this method
-        return 0;
+        int[] totals = {0, 0, 0, 0};
+        
+        // Up-down
+        for (int x = 0; x < game.numSquaresX; x++) {
+            int current = 0;
+            int next = current + 1;
+            while (next < game.numSquaresY) {
+                while (next < game.numSquaresY && game.grid.isCellAvailable(new Cell(x, next))) {
+                    next++;
+                }
+                if (next >= game.numSquaresY) {
+                    next--;
+                }
+                int currentValue = game.grid.isCellOccupied(new Cell(x, current)) ?
+                                   (int) (Math.log(game.grid.getCellContent(x, current).getValue()) / Math.log(2)) :
+                                   0;
+                int nextValue = game.grid.isCellOccupied(new Cell(x, next)) ?
+                                (int) (Math.log(game.grid.getCellContent(x, next).getValue()) / Math.log(2)) :
+                                0;
+                if (currentValue > nextValue) {
+                    totals[0] += nextValue - currentValue;
+                } else if (nextValue > currentValue) {
+                    totals[1] += currentValue - nextValue;
+                }
+                current = next;
+                next++;
+            }
+        }
+        
+        // Left-right
+        for (int y = 0; y < game.numSquaresY; y++) {
+            int current = 0;
+            int next = current + 1;
+            while (next < game.numSquaresX) {
+                while (next < game.numSquaresX && game.grid.isCellAvailable(new Cell(next, y))) {
+                    next++;
+                }
+                if (next >= game.numSquaresX) {
+                    next--;
+                }
+                int currentValue = game.grid.isCellOccupied(new Cell(current, y)) ?
+                    (int) (Math.log(game.grid.getCellContent(current, y).getValue()) / Math.log(2)) :
+                    0;
+                int nextValue = game.grid.isCellOccupied(new Cell(next, y)) ?
+                    (int) (Math.log(game.grid.getCellContent(next, y).getValue()) / Math.log(2)) :
+                    0;
+                if (currentValue > nextValue) {
+                    totals[2] += nextValue - currentValue;
+                } else if (nextValue > currentValue) {
+                    totals[3] += currentValue - nextValue;
+                }
+                current = next;
+                next++;
+            }
+        }
+        
+        return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3]);
     }
     
     private int getMaxValue(MainGame game) {
