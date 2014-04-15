@@ -209,6 +209,8 @@ public class MainGame {
     }
 
     public void endGame() {
+        if (emulating) return;
+        
         aGrid.startAnimation(-1, -1, FADE_GLOBAL_ANIMATION, NOTIFICATION_ANIMATION_TIME, NOTIFICATION_DELAY_TIME, null);
         if (score >= highScore) {
             highScore = score;
