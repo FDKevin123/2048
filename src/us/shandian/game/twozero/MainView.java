@@ -111,7 +111,7 @@ public class MainView extends View
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
-                    aiRunning = false;
+                    ai = null;
                     break;
                 }
             }
@@ -558,10 +558,8 @@ public class MainView extends View
     public void stopAi() {
         aiThread.interrupt();
         
-        while (aiRunning);
-        
         aiThread = null;
-        ai = null;
+        aiRunning = false;
     }
 
 }
