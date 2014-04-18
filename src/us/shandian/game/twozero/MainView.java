@@ -85,6 +85,7 @@ public class MainView extends View
     static int textPaddingSize = 0;
     static int iconPaddingSize = 0;
 
+    static final float MOVING_ACCELERATION = (float) 0.6;
     static final float MERGING_ACCELERATION = (float) 0.6;
     static final float MAX_VELOCITY = (float) (MERGING_ACCELERATION * 0.5); // v = at (t = 0.5)
     
@@ -328,8 +329,9 @@ public class MainView extends View
                             int previousY = aCell.extras[1];
                             int currentX = currentTile.getX();
                             int currentY = currentTile.getY();
-                            int dX = (int) ((currentX - previousX) * (cellSize + gridWidth) * (percentDone - 1) * 1.0);
-                            int dY = (int) ((currentY - previousY) * (cellSize + gridWidth) * (percentDone - 1) * 1.0);
+                            int dX = (int) ((currentX - previousX) * (cellSize + gridWidth) * (percentDone - 1) * (percentDone - 1) * -MOVING_ACCELERATION);
+                            int dY = (int) ((currentY - previousY) * (cellSize + gridWidth) * (percentDone - 1) * (percentDone - 1) * -MOVING_ACCELERATION);
+                            
                             drawDrawable(canvas, cellRectangle[tempIndex], sX + dX, sY + dY, eX + dX, eY + dY);
                         }
                         animated = true;
