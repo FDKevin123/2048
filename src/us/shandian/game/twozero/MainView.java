@@ -402,7 +402,7 @@ public class MainView extends View
 
     public static int log2(int n){
         if(n <= 0) throw new IllegalArgumentException();
-        return 31 - Integer.numberOfLeadingZeros(n);
+        return (int) (Math.log(n) / Math.log(2));
     }
 
     public void getLayout(int width, int height) {
@@ -501,9 +501,12 @@ public class MainView extends View
         //Loading resources
         game = new MainGame(context, this);
         
-        if (tileTexts.length > 12) {
+        if (tileTexts.length > 16 && tileTexts.length <= 25) {
             game.numSquaresX = 5;
             game.numSquaresY = 5;
+        } else if (tileTexts.length > 25) {
+            game.numSquaresX = 6;
+            game.numSquaresY = 6;
         }
         
         try {

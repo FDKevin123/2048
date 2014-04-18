@@ -25,6 +25,10 @@
         
         <!-- Periodic Table Of Elements (First 20 elements) -->
         <item>H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca</item>
+        
+        <!-- Is it possible 2147483648? -->
+        <item>2|4|8|16|32|64|128|256|512|1024|2048|4096|8192|16384|32768|65536|131072|262144|524288|1048576|2097152|4194304|8388608|16777216|33554432|67108864|134217728|268435456|536870912|1073741824|2147483648</item>
+        
     </string-array>
     
     <string-array name="settings_variety_entries" translatable="false">
@@ -32,6 +36,7 @@
         <item>4096</item>
         <item>@string/settings_variety_chinese_dynasties</item>
         <item>@string/settings_variety_periodic_table_of_elements_first_twenty</item>
+        <item>2147483648</item>
     </string-array>
     
     <string-array name="settings_variety_values" translatable="false">
@@ -39,5 +44,6 @@
         <item>1</item>
         <item>2</item>
         <item>3</item>
+        <item>4</item>
     </string-array>
 </resources>
