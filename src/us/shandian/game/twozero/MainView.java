@@ -105,8 +105,12 @@ public class MainView extends View
         @Override
         public void run() {
             while (!game.won && !game.lose) {
-                int bestMove = ai.getBestMove();
-                aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
+                try {
+                    int bestMove = ai.getBestMove();
+                    aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
+                } catch (NullPointerException e) {
+                    break;
+                }
 
                 try {
                     Thread.sleep(200);
