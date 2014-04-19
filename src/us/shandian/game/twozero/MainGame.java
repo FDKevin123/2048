@@ -69,12 +69,16 @@ public class MainGame {
 
     public void addRandomTile() {
         if (grid.isCellsAvailable()) {
-            int value = Math.random() < 0.9 ? 2 : 4;
-            Tile tile = new Tile(grid.randomAvailableCell(), value);
-            grid.insertTile(tile);
-            if (!emulating) aGrid.startAnimation(tile.getX(), tile.getY(), SPAWN_ANIMATION,
-                    SPAWN_ANIMATION_TIME, MOVE_ANIMATION_TIME, null); //Direction: -1 = EXPANDING
+            addRandomTile(grid.randomAvailableCell());
         }
+    }
+    
+    public void addRandomTile(Cell cell) {
+        int value = Math.random() < 0.9 ? 2 : 4;
+        Tile tile = new Tile(cell, value);
+        grid.insertTile(tile);
+        if (!emulating) aGrid.startAnimation(tile.getX(), tile.getY(), SPAWN_ANIMATION,
+                                             SPAWN_ANIMATION_TIME, MOVE_ANIMATION_TIME, null); //Direction: -1 = EXPANDING
     }
 
     public void recordHighScore() {
@@ -189,7 +193,7 @@ public class MainGame {
         }
 
         if (moved) {
-            if (!emulating) {
+            if (!emulating && !MainView.inverseMode) {
                 addRandomTile();
             }
 

@@ -65,6 +65,7 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                 moved = false;
                 return true;
             case MotionEvent.ACTION_MOVE:
+                if (MainView.inverseMode) return true;
                 x = event.getX();
                 y = event.getY();
                 if (!mView.game.won && !mView.game.lose) {
@@ -139,6 +140,24 @@ public class InputListener implements View.OnTouchListener, View.OnKeyListener {
                         && inRange(MainView.sXNewGame, x, MainView.sXNewGame + MainView.iconSize)
                         && inRange(MainView.sYIcons, y, MainView.sYIcons + MainView.iconSize)) {
                     mView.game.newGame();
+                }
+                
+                if (mView.inverseMode) {
+                    for (Cell cell : mView.game.grid.getAvailableCells()) {
+                        int xx = cell.getX();
+                        int yy = cell.getY();
+                        int sX = mView.startingX + mView.gridWidth + (mView.cellSize + mView.gridWidth) * xx;
+                        int eX = sX + mView.cellSize;
+                        int sY = mView.startingY + mView.gridWidth + (mView.cellSize + mView.gridWidth) * yy;
+                        int eY = sY + mView.cellSize;
+                        
+                        if (inRange(sX, x, eX) && inRange(sY, y, eY)) {
+                            mView.game.addRandomTile(cell);
+                            mView.invalidate();
+                            mView.startAi();
+                            break;
+                        }
+                    }
                 }
         }
         return true;

@@ -9,6 +9,7 @@ public class SettingsProvider
     
     public static String KEY_SENSITIVITY = "settings_sensitivity";
     public static String KEY_VARIETY = "settings_variety";
+    public static String KEY_INVERSE_MODE = "settings_inverse_mode";
 
     public static SharedPreferences prefs;
     

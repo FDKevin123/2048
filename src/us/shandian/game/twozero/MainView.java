@@ -81,6 +81,8 @@ public class MainView extends View
     String[] tileTexts;
     static int maxValue;
     
+    public static boolean inverseMode = false;
+    
     static final int BASE_ANIMATION_TIME = 120000000;
     static int textPaddingSize = 0;
     static int iconPaddingSize = 0;
@@ -110,6 +112,14 @@ public class MainView extends View
                     int bestMove = ai.getBestMove();
                     aiHandler.sendMessage(aiHandler.obtainMessage(0, bestMove));
                 } catch (NullPointerException e) {
+                    break;
+                }
+                
+                if (inverseMode) {
+                    // Run only one step in inverse mode
+                    aiRunning = false;
+                    aiThread = null;
+                    Thread.currentThread().interrupt();
                     break;
                 }
 
@@ -504,6 +514,9 @@ public class MainView extends View
         tileTexts = varietyEntries[variety].split("\\|");
         maxValue = (int) Math.pow(2, tileTexts.length);
         
+        // Inverse mode
+        inverseMode = SettingsProvider.getBoolean(SettingsProvider.KEY_INVERSE_MODE, false);
+        
         //Loading resources
         game = new MainGame(context, this);
         
@@ -520,7 +533,11 @@ public class MainView extends View
             score = resources.getString(R.string.score);
             youWin = resources.getString(R.string.you_win);
             gameOver = resources.getString(R.string.game_over);
-            instructions = resources.getString(R.string.instructions) + " " + tileTexts[0] + " + " + tileTexts[0] + " = " + tileTexts[1];
+            if (!inverseMode) {
+                instructions = resources.getString(R.string.instructions) + " " + tileTexts[0] + " + " + tileTexts[0] + " = " + tileTexts[1];
+            } else {
+                instructions = resources.getString(R.string.instructuons_inversed);
+            }
             backgroundRectangle =  resources.getDrawable(R.drawable.background_rectangle);
             cellRectangle[0] =  resources.getDrawable(R.drawable.cell_rectangle);
             cellRectangle[1] =  resources.getDrawable(R.drawable.cell_rectangle_2);

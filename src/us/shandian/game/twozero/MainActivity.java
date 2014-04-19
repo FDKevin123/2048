@@ -68,7 +68,11 @@ public class MainActivity extends Activity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         
-        if (view.aiRunning) {
+        if (view.inverseMode) {
+            menu.findItem(R.id.menu_undo).setEnabled(false);
+            menu.findItem(R.id.menu_autorun).setEnabled(false);
+            menu.findItem(R.id.menu_stopautorun).setEnabled(false);
+        } else if (view.aiRunning) {
             menu.findItem(R.id.menu_undo).setEnabled(false);
             menu.findItem(R.id.menu_autorun).setEnabled(false);
             menu.findItem(R.id.menu_stopautorun).setEnabled(true);

@@ -14,4 +14,9 @@
         android:entries="@array/settings_variety_entries"
         android:entryValues="@array/settings_variety_values" />
     
+    <CheckBoxPreference
+        android:key="settings_inverse_mode"
+        android:title="@string/settings_inverse_mode"
+        android:checked="false"/>
+    
 </PreferenceScreen>
